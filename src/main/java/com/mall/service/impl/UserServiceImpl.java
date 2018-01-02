@@ -2,6 +2,7 @@ package com.mall.service.impl;
 
 import com.mall.common.Const;
 import com.mall.common.ServerResponse;
+import com.mall.common.TokenCache;
 import com.mall.dao.UserMapper;
 import com.mall.pojo.User;
 import com.mall.service.IUserService;
@@ -9,6 +10,8 @@ import com.mall.util.MD5Util;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 /**
  * Created by Administrator on 2017/12/31.
@@ -77,5 +80,73 @@ public class UserServiceImpl implements IUserService {
             return ServerResponse.createByErrorMessage("参数错误");
         }
         return ServerResponse.createBySuccessMessage("校验成功");
+    }
+
+    @Override
+    public ServerResponse<String> selectQuestion(String username) {
+        ServerResponse validResponse = checkValid(username, Const.USERNAE);
+        if (validResponse.isSuccess()){
+            //用户不存在
+            return ServerResponse.createByErrorMessage("用户不存在");
+        }
+        String question = userMapper.selectQuestionByUsername(username);
+        if (StringUtils.isNotBlank(question)){
+            return ServerResponse.createBySuccess(question);
+        }
+        return ServerResponse.createByErrorMessage("没有设置找回密码问题");
+    }
+
+    @Override
+    public ServerResponse<String> checkAnswer(String username, String question, String answer) {
+        int resultCount = userMapper.checkAnswer(username, question, answer);
+        if (resultCount > 0){
+            //说明问题及问题答案是这个用户的，并且是正确的
+            String forgetToken = UUID.randomUUID().toString();
+            TokenCache.setKey(TokenCache.TOKEN_PREFIX+username, forgetToken);
+            return ServerResponse.createBySuccess(forgetToken);
+        }
+        return ServerResponse.createByErrorMessage("答案错误");
+    }
+
+    @Override
+    public ServerResponse<String> forgetResetPassword(String username, String newPassword, String forgetToken) {
+        if (StringUtils.isBlank(forgetToken)){
+            return ServerResponse.createByErrorMessage("参数错误，token需要传递");
+        }
+        ServerResponse validResponse = this.checkValid(username, Const.USERNAE);
+        if (validResponse.isSuccess()){
+            //用户不存在
+            return ServerResponse.createByErrorMessage("用户名不存在");
+        }
+        String token = TokenCache.getValue(TokenCache.TOKEN_PREFIX+username);
+        if (StringUtils.isBlank(token)){
+            return ServerResponse.createByErrorMessage("token无效或者过期");
+        }
+
+        if (StringUtils.equals(token, forgetToken)){
+            String md5Password = MD5Util.MD5EncodeUtf8(newPassword);
+            int resultCount = userMapper.updatePasswordByUsername(username, md5Password);
+            if (resultCount > 0){
+                return ServerResponse.createBySuccessMessage("修改密码成功");
+            }
+        }else{
+            return ServerResponse.createByErrorMessage("token错误，请重新获取重置密码的token");
+        }
+        return ServerResponse.createByErrorMessage("密码修改失败");
+    }
+
+    @Override
+    public ServerResponse<String> resetPassword(String passwordOld, String passwordNew, User user) {
+        //防止横向越权，由id与passwordOld来共同确保
+        int resultCount = userMapper.checkPassword(MD5Util.MD5EncodeUtf8(passwordOld), user.getId());
+        if (resultCount == 0){
+            return ServerResponse.createByErrorMessage("旧密码错误");
+        }
+        user.setPassword(MD5Util.MD5EncodeUtf8(passwordNew));
+        resultCount = userMapper.updateByPrimaryKeySelective(user);
+        if (resultCount > 0){
+            return ServerResponse.createBySuccessMessage("修改密码成功");
+        }
+        return ServerResponse.createByErrorMessage("密码修改失败");
     }
 }
