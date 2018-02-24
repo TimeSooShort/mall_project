@@ -42,7 +42,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public ServerResponse<String> register(User user) {
-        ServerResponse<String> validResponse = this.checkValid(user.getUsername(), Const.USERNAE);
+        ServerResponse<String> validResponse = this.checkValid(user.getUsername(), Const.USERNAME);
         if (!validResponse.isSuccess()){
             return validResponse;
         }
@@ -64,13 +64,13 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ServerResponse<String> checkValid(String str, String type) {
         if (StringUtils.isNotBlank(str)){
-            if (Const.EMAIL.equals(str)){
+            if (Const.EMAIL.equals(type)){
                 int resultCount = userMapper.checkEmail(str);
                 if (resultCount > 0){
                     return ServerResponse.createByErrorMessage("email已存在");
                 }
             }
-            if (Const.USERNAE.equals(str)){
+            if (Const.USERNAME.equals(type)){
                 int resultCount = userMapper.checkUsername(str);
                 if (resultCount > 0){
                     return ServerResponse.createByErrorMessage("用户名已存在");
@@ -84,7 +84,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public ServerResponse<String> selectQuestion(String username) {
-        ServerResponse validResponse = checkValid(username, Const.USERNAE);
+        ServerResponse validResponse = checkValid(username, Const.USERNAME);
         if (validResponse.isSuccess()){
             //用户不存在
             return ServerResponse.createByErrorMessage("用户不存在");
@@ -113,7 +113,7 @@ public class UserServiceImpl implements IUserService {
         if (StringUtils.isBlank(forgetToken)){
             return ServerResponse.createByErrorMessage("参数错误，token需要传递");
         }
-        ServerResponse validResponse = this.checkValid(username, Const.USERNAE);
+        ServerResponse validResponse = this.checkValid(username, Const.USERNAME);
         if (validResponse.isSuccess()){
             //用户不存在
             return ServerResponse.createByErrorMessage("用户名不存在");
@@ -148,5 +148,42 @@ public class UserServiceImpl implements IUserService {
             return ServerResponse.createBySuccessMessage("修改密码成功");
         }
         return ServerResponse.createByErrorMessage("密码修改失败");
+    }
+
+    @Override
+    public ServerResponse<User> updateInformation(User user) {
+        int resultCount = userMapper.checkEmailByUserId(user.getEmail(), user.getId());
+        if (resultCount > 0){
+            return ServerResponse.createByErrorMessage("该email已被注册，请更换邮箱");
+        }
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setEmail(user.getEmail());
+        updateUser.setPhone(user.getPhone());
+        updateUser.setQuestion(user.getQuestion());
+        updateUser.setAnswer(user.getAnswer());
+        int updateCount = userMapper.updateByPrimaryKeySelective(updateUser);
+        if (updateCount > 0){
+            return ServerResponse.createBySuccess("信息更新成功", updateUser);
+        }
+        return ServerResponse.createByErrorMessage("信息更新失败");
+    }
+
+    @Override
+    public ServerResponse<User> getInformation(Integer userId) {
+        User user = userMapper.selectByPrimaryKey(userId);
+        if (user == null){
+            return ServerResponse.createByErrorMessage("找不到当前用户");
+        }
+        user.setPassword(StringUtils.EMPTY);
+        return ServerResponse.createBySuccess(user);
+    }
+
+    @Override
+    public ServerResponse checkAdminRole(User user){
+        if (user != null && user.getRole() ==Const.Role.ROLE_ADMIN){
+            return ServerResponse.createBySuccess();
+        }
+        return ServerResponse.createByError();
     }
 }
