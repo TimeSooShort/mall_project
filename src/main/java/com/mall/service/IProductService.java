@@ -1,5 +1,6 @@
 package com.mall.service;
 
+import com.github.pagehelper.PageInfo;
 import com.mall.common.ServerResponse;
 import com.mall.pojo.Product;
 import com.mall.vo.ProductDetailVO;
@@ -14,4 +15,8 @@ public interface IProductService {
     ServerResponse<String> setSaleStatus(Integer productId, Integer status);
 
     ServerResponse<ProductDetailVO> manageProductDetail(Integer productId);
+
+    ServerResponse<PageInfo> getProductList(Integer pageNum, Integer pageSize);
+
+    ServerResponse<PageInfo> searchProduct(String productName, Integer productId, Integer pageNum, Integer pageSize);
 }
