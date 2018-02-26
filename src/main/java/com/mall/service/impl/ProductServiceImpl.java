@@ -114,8 +114,7 @@ public class ProductServiceImpl implements IProductService {
         for (Product productItem : productsList){
             list.add(assembleProductListVO(productItem));
         }
-        PageInfo<ProductListVO> pageResult = new PageInfo<>();
-        pageResult.setList(list);
+        PageInfo<ProductListVO> pageResult = new PageInfo<>(list);
         return ServerResponse.createBySuccess(pageResult);
     }
 
