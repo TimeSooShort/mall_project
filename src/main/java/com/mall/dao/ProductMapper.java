@@ -1,6 +1,5 @@
 package com.mall.dao;
 
-import com.mall.common.ServerResponse;
 import com.mall.pojo.Product;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,4 +21,6 @@ public interface ProductMapper {
     List<Product> selectProductList();
 
     List<Product> selectProductByNameAndId(@Param("productName") String productName,@Param("productId") Integer productId);
+
+    List<Product> selectByNameAndCategoryIds(@Param("productName") String productName,@Param("categoryIdList") List<Integer> categoryIdList);
 }
