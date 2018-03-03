@@ -1,5 +1,6 @@
 package com.mall.service.impl;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.mall.common.Const;
 import com.mall.common.ResponseCode;
@@ -57,6 +58,39 @@ public class CartServiceImpl implements ICartService {
         }
         return this.getList(userId);
     }
+
+    public ServerResponse<CartProductListVO> updateCount(Integer userId,Integer productId, Integer count){
+        if (productId == null || count == null){
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(),
+                    ResponseCode.ILLEGAL_ARGUMENT.getDesc());
+        }
+        Cart cart = cartMapper.selectCartByUserIdProductId(userId, productId);
+        if (cart != null){
+            cart.setQuantity(count);
+        }
+        cartMapper.updateByPrimaryKeySelective(cart);
+        return this.getList(userId);
+    }
+
+    public ServerResponse<CartProductListVO> deleteProductInCart(Integer userId, String ids){
+        List<String> productIdList = Splitter.on(",").splitToList(ids);
+        if (CollectionUtils.isEmpty(productIdList)){
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(),
+                    ResponseCode.ILLEGAL_ARGUMENT.getDesc());
+        }
+        cartMapper.deleteOneProductInCart(userId, productIdList);
+        return this.getList(userId);
+    }
+
+    public ServerResponse<CartProductListVO> selectOrUnSelect(Integer userId, Integer productId, Integer checked){
+        cartMapper.checkedOrUncheckedProduct(userId, productId, checked);
+        return this.getList(userId);
+    }
+
+    public ServerResponse<Integer> getCartProductCount(Integer userId){
+        return ServerResponse.createBySuccess(cartMapper.selectCartProductCount(userId));
+    }
+
 
     private CartProductListVO getCartProductListVO(Integer userId){
         List<CartProductVO> cartProductVOList = Lists.newArrayList();
