@@ -7,9 +7,11 @@ import com.mall.common.ServerResponse;
 import com.mall.dao.ShippingMapper;
 import com.mall.pojo.Shipping;
 import com.mall.service.IShippingService;
+import com.mall.util.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ public class ShippingService implements IShippingService {
     }
 
     public ServerResponse<String> del(Integer userId, Integer shippingId){
+        //采用双验证为了防止横向越权，如某一登录用户删除其他用户的地址信息
         int rowCount = shippingMapper.deleteByUserIdShippingId(userId, shippingId);
         if (rowCount > 0){
             return ServerResponse.createBySuccessMessage("删除地址成功");
@@ -43,6 +46,8 @@ public class ShippingService implements IShippingService {
     }
 
     public ServerResponse<String> update(Shipping shipping){
+        Shipping shipping1 = this.select(shipping.getId(), shipping.getUserId()).getData();
+        shipping.setCreateTime(shipping1.getCreateTime());
         int rowCount = shippingMapper.updateByUserIdShippingId(shipping);
         if (rowCount > 0){
             return ServerResponse.createBySuccessMessage("更新地址成功");

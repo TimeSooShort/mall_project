@@ -135,8 +135,8 @@
   
   <delete id="deleteOneProductInCart" parameterType="map">
     DELETE FROM mmall_cart WHERE user_id=#{userId}
-    <if test="productId != null">
-      and product_id in 
+    <if test="productIds != null">
+      and product_id in
       <foreach collection="productIds" item="item" index="index" open="(" separator="," close=")">
         #{item}
       </foreach>
@@ -153,6 +153,6 @@
   </update>
 
   <select id="selectCartProductCount" parameterType="int" resultType="int">
-    SELECT IFNULL(sum(quantity), 0) as count from mall_cart where user_id=#{userId}
+    SELECT IFNULL(sum(quantity), 0) as count from mmall_cart where user_id=#{userId}
   </select>
 </mapper>

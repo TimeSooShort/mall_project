@@ -59,13 +59,13 @@ public class CartController {
 
     @RequestMapping("delete_product.do")
     @ResponseBody
-    public ServerResponse<CartProductListVO> deleteCart(HttpSession session, String ids){
+    public ServerResponse<CartProductListVO> deleteCart(HttpSession session, String productIds){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
                     ResponseCode.NEED_LOGIN.getDesc());
         }
-        return iCartService.deleteProductInCart(user.getId(), ids);
+        return iCartService.deleteProductInCart(user.getId(), productIds);
     }
 
     @RequestMapping("select.do")
@@ -92,7 +92,7 @@ public class CartController {
 
     @RequestMapping("select_all.do")
     @ResponseBody
-    public ServerResponse<CartProductListVO> selectAll(HttpSession session, Integer productId){
+    public ServerResponse<CartProductListVO> selectAll(HttpSession session){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
@@ -103,7 +103,7 @@ public class CartController {
 
     @RequestMapping("un_select_all.do")
     @ResponseBody
-    public ServerResponse<CartProductListVO> unSelectAll(HttpSession session, Integer productId){
+    public ServerResponse<CartProductListVO> unSelectAll(HttpSession session){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),

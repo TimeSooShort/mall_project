@@ -44,7 +44,13 @@ public class CartServiceImpl implements ICartService {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(),
                     ResponseCode.ILLEGAL_ARGUMENT.getDesc());
         }
+        //添加 下架商品不能加到购物车
+        int status = productMapper.selectByPrimaryKey(productId).getStatus();
+        if (status != Const.ProductStatusEnum.ON_SALE.getCode()){
+            return ServerResponse.createByErrorMessage("商品已下架或删除，不能添加到购物车");
+        }
         Cart cart = cartMapper.selectCartByUserIdProductId(userId, productId);
+
         if (cart == null){
             Cart cartNew = new Cart();
             cartNew.setQuantity(count);
@@ -133,7 +139,7 @@ public class CartServiceImpl implements ICartService {
                     cartProductVO.setProductTotalPrice(BigDecimalUtil.mul(realBuyCount, product.getPrice().doubleValue()));
                 }
                 if (cartItem.getChecked() == Const.Cart.CHECKED){
-                    allTotalPrice = BigDecimalUtil.add(allTotalPrice.doubleValue(), cartProductVO.getProductPrice().doubleValue());
+                    allTotalPrice = BigDecimalUtil.add(allTotalPrice.doubleValue(), cartProductVO.getProductTotalPrice().doubleValue());
                 }
                 cartProductVOList.add(cartProductVO);
             }
