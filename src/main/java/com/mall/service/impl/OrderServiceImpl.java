@@ -17,17 +17,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mall.common.Const;
 import com.mall.common.ServerResponse;
-import com.mall.dao.OrderItemMapper;
-import com.mall.dao.OrderMapper;
-import com.mall.dao.PayInfoMapper;
-import com.mall.pojo.Order;
-import com.mall.pojo.OrderItem;
-import com.mall.pojo.PayInfo;
+import com.mall.dao.*;
+import com.mall.pojo.*;
 import com.mall.service.IOrderService;
 import com.mall.util.BigDecimalUtil;
 import com.mall.util.DateTimeUtil;
 import com.mall.util.FTPUtil;
 import com.mall.util.PropertiesUtil;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.slf4j.Logger;
@@ -37,8 +34,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by Administrator on 2018/3/8.
@@ -70,6 +69,88 @@ public class OrderServiceImpl implements IOrderService{
 
     @Autowired
     private PayInfoMapper payInfoMapper;
+
+    @Autowired
+    private CartMapper cartMapper;
+
+    @Autowired
+    private ProductMapper productMapper;
+
+    /**
+     * 先检查cart是否合格，在为每个勾选的cart生成对一个的OrderItem，最后汇总成Order订单
+     * @param userId
+     * @param shippingId
+     * @return
+     */
+    public ServerResponse create(Integer userId, Integer shippingId){
+        List<Cart> cartList = cartMapper.selectByUserId(userId);
+        if (CollectionUtils.isEmpty(cartList)){
+            return ServerResponse.createByErrorMessage("购物车为空");
+        }
+
+        List<OrderItem> orderItemList = Lists.newArrayList();
+        for (Cart cartItem : cartList){
+            if (cartItem.getChecked() == Const.Cart.UN_CHECKED){
+                continue;
+            }
+            Product product = productMapper.selectByPrimaryKey(cartItem.getProductId());
+            if (product.getStatus() != Const.ProductStatusEnum.ON_SALE.getCode()){
+                return ServerResponse.createByErrorMessage("商品"+product.getName()+"已下架或删除");
+            }
+            //刚加入购物车的商品数量会得到修正，但一段时间商品实际数量会减少，所以有必要在此检查数量
+            if (cartItem.getQuantity() > product.getStock()){
+                return ServerResponse.createByErrorMessage("没有那么多商品了，请修正数量"+product.getName());
+            }
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setUserId(userId);
+            orderItem.setCurrentUnitPrice(product.getPrice());
+            orderItem.setProductId(product.getId());
+            orderItem.setProductName(product.getName());
+            orderItem.setProductImage(product.getMainImage());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setTotalPrice(BigDecimalUtil.mul(product.getPrice().doubleValue(), cartItem.getQuantity()));
+
+            orderItemList.add(orderItem);
+        }
+        if (CollectionUtils.isEmpty(orderItemList)){
+            return ServerResponse.createByErrorMessage("未勾选任何商品，请确认商品再结账");
+        }
+
+        BigDecimal orderPrice = new BigDecimal("0");
+        for (OrderItem orderItem : orderItemList){
+            orderPrice = BigDecimalUtil.add(orderPrice.doubleValue(), orderItem.getTotalPrice().doubleValue());
+        }
+
+        //生成订单Order
+        Order order = new Order();
+        order.setPayment(orderPrice);
+        order.setOrderNo(this.getOrderNo());
+        order.setStatus(Const.OrderStateEnum.NO_PAY.getCode());
+        order.setPaymentType(Const.PaymentTypeEnum.ON_LINE.getCode());
+        order.setPostage(0);
+        order.setShippingId(shippingId);
+        order.setUserId(userId);
+
+        int rowCount = orderMapper.insert(order);
+        if (rowCount <= 0){
+            return ServerResponse.createByErrorMessage("生成订单错误");
+        }
+
+        //确定订单生成再为OrderItem赋orderNo值
+        for (OrderItem orderItem : orderItemList){
+            orderItem.setOrderNo(order.getOrderNo());
+        }
+        return null;
+    }
+
+    public long getOrderNo(){
+        long currentTime = System.currentTimeMillis();
+        return currentTime+new Random().nextInt(100);
+    }
+
+
+
 
     public ServerResponse pay(Long orderNum, Integer userId, String path){
         Map<String, String> resultMap = Maps.newHashMap();
@@ -224,4 +305,16 @@ public class OrderServiceImpl implements IOrderService{
 
         return ServerResponse.createBySuccess();
     }
+
+    public ServerResponse queryOrderPayStatus(Integer userId, Long orderNo){
+        Order order = orderMapper.selectByUserIdOrderNum(userId, orderNo);
+        if (order == null){
+            return ServerResponse.createByErrorMessage("该用户并没有该订单,查询无效");
+        }
+        if (order.getStatus() >= Const.OrderStateEnum.PAID.getCode()){
+            return ServerResponse.createBySuccess();
+        }
+        return ServerResponse.createByError();
+    }
+
 }

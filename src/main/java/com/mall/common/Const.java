@@ -110,4 +110,33 @@ public class Const {
             return desc;
         }
     }
+
+    public enum PaymentTypeEnum{
+        ON_LINE(1, "在线支付");
+
+        private int code;
+        private String desc;
+
+        PaymentTypeEnum(int code, String desc) {
+            this.code = code;
+            this.desc = desc;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        public static PaymentTypeEnum codeOf(int code){
+            for (PaymentTypeEnum paymentTypeEnum : values()){
+                if (paymentTypeEnum.getCode() == code){
+                    return paymentTypeEnum;
+                }
+            }
+            throw new RuntimeException("未找到对应枚举");
+        }
+    }
 }
