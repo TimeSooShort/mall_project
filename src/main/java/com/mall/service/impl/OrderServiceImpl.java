@@ -11,6 +11,7 @@ import com.alipay.demo.trade.service.AlipayTradeService;
 import com.alipay.demo.trade.service.impl.AlipayTradeServiceImpl;
 import com.alipay.demo.trade.utils.ZxingUtils;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mall.common.Const;
@@ -293,19 +294,26 @@ public class OrderServiceImpl implements IOrderService{
     public ServerResponse getOrderList(Integer userId, Integer pageSize, Integer pageNum){
         PageHelper.startPage(pageNum,pageSize);
         List<Order> orderList = orderMapper.selectByUserId(userId);
-
-        return null;
+        List<OrderVO> orderVOList = assembleOrderVOlist(orderList, userId);
+        PageInfo info = new PageInfo(orderList);
+        info.setList(orderVOList);
+        return ServerResponse.createByError().createBySuccess(info);
     }
 
     private List<OrderVO> assembleOrderVOlist(List<Order> orderList, Integer userId){
         List<OrderVO> orderVOList = Lists.newArrayList();
         for (Order order : orderList){
-            List<OrderItem> orderItemList = Lists.newArrayList();
+            List<OrderItem> orderItemList;
             if (userId == null){
-
+                //管理员在查询时不需要传id
+                orderItemList = orderItemMapper.selectByOrderNo(order.getOrderNo());
+            }else {
+                orderItemList = orderItemMapper.selectByUserIdOrderNo(userId, order.getOrderNo());
             }
+            OrderVO orderVO = this.assembleOrderVO(order, orderItemList);
+            orderVOList.add(orderVO);
         }
-        return null;
+        return orderVOList;
     }
 
 
@@ -478,4 +486,37 @@ public class OrderServiceImpl implements IOrderService{
         return ServerResponse.createByError();
     }
 
+
+    //后台
+    public ServerResponse<PageInfo> manageList(Integer pageNum, Integer pageSize){
+        PageHelper.startPage(pageNum, pageSize);
+        List<Order> orderList = orderMapper.selectAllOrder();
+        List<OrderVO> orderVOList = this.assembleOrderVOlist(orderList, null);
+        PageInfo pageInfo = new PageInfo(orderList);
+        pageInfo.setList(orderVOList);
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    public ServerResponse<PageInfo> manageSearch(Integer pageNum, Integer pageSize, Long orderNo){
+        PageHelper.startPage(pageNum,pageSize);
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null){
+            return ServerResponse.createByErrorMessage("没有该订单");
+        }
+        List<OrderItem> orderItemList = orderItemMapper.selectByOrderNo(order.getOrderNo());
+        OrderVO orderVO = this.assembleOrderVO(order, orderItemList);
+        PageInfo pageInfo = new PageInfo(Lists.newArrayList(order));
+        pageInfo.setList(Lists.newArrayList(orderVO));
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    public ServerResponse<OrderVO> manageDetail(Long orderNo){
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null){
+            return ServerResponse.createByErrorMessage("没有该订单");
+        }
+        List<OrderItem> orderItemList = orderItemMapper.selectByOrderNo(order.getOrderNo());
+        OrderVO orderVO = this.assembleOrderVO(order, orderItemList);
+        return ServerResponse.createBySuccess(orderVO);
+    }
 }

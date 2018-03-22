@@ -12,7 +12,7 @@ public interface ICartService {
 
     ServerResponse<CartProductListVO> getList(Integer userId);
 
-    ServerResponse<CartProductListVO> updateCount(Integer userId,Integer productId, Integer count);
+    ServerResponse<CartProductListVO> updateCount(Integer userId, Integer productId, Integer count);
 
     ServerResponse<CartProductListVO> deleteProductInCart(Integer userId, String ids);
 

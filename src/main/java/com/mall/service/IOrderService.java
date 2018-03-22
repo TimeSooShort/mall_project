@@ -1,6 +1,8 @@
 package com.mall.service;
 
+import com.github.pagehelper.PageInfo;
 import com.mall.common.ServerResponse;
+import com.mall.vo.OrderVO;
 
 import java.util.Map;
 
@@ -22,4 +24,13 @@ public interface IOrderService {
     ServerResponse getOrderCartProduct(Integer userId);
 
     ServerResponse getOrderDetail(Integer userId, Long orderNo);
+
+    ServerResponse getOrderList(Integer userId, Integer pageSize, Integer pageNum);
+
+    //后台
+    ServerResponse<PageInfo> manageList(Integer pageNum, Integer pageSize);
+
+    ServerResponse<PageInfo> manageSearch(Integer pageNum, Integer pageSize, Long orderNo);
+
+    ServerResponse<OrderVO> manageDetail(Long orderNo);
 }
