@@ -10,6 +10,7 @@ import com.mall.common.ServerResponse;
 import com.mall.pojo.Order;
 import com.mall.pojo.User;
 import com.mall.service.IOrderService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +30,10 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/order/")
+@Slf4j
 public class OrderController {
 
-    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
+    //private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private IOrderService iOrderService;
@@ -64,7 +66,7 @@ public class OrderController {
             params.put(key, valueString);
         }
 
-        logger.info("支付宝回调，sign:{},trade_status:{},参数:{}", params.get("sign"), params.get("trade_status"), params.toString());
+        log.info("支付宝回调，sign:{},trade_status:{},参数:{}", params.get("sign"), params.get("trade_status"), params.toString());
 
         //AlipaySignature.rsaCheckV2源码里将会remove“sign”
         params.remove("sign_type");
@@ -77,7 +79,7 @@ public class OrderController {
                 return ServerResponse.createByErrorMessage("非法请求，验证不通过");
             }
         } catch (AlipayApiException e) {
-            logger.error("支付宝验证异常", e);
+            log.error("支付宝验证异常", e);
         }
 
         //out_trade_no,total_amount,seller_id

@@ -1,6 +1,5 @@
 package com.mall.common;
 
-import com.mysql.fabric.Server;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
