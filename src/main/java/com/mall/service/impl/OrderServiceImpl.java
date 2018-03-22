@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -237,7 +238,7 @@ public class OrderServiceImpl implements IOrderService{
     }
 
     public ServerResponse cancelOrder(Integer userId, Long orderNo){
-        Order order = orderMapper.selectByUserIdOrderNum(userId, orderNo);
+        Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
         if (order == null){
             return ServerResponse.createByErrorMessage("没有该订单");
         }
@@ -246,7 +247,7 @@ public class OrderServiceImpl implements IOrderService{
         }
         Order updateOrder = new Order();
         updateOrder.setId(order.getId());
-        updateOrder.setStatus(order.getStatus());
+        updateOrder.setStatus(Const.OrderStateEnum.CANCELED.getCode());
 
         int rowCount = orderMapper.updateByPrimaryKeySelective(updateOrder);
         if (rowCount <= 0){
@@ -256,33 +257,27 @@ public class OrderServiceImpl implements IOrderService{
     }
 
     public ServerResponse getOrderCartProduct(Integer userId){
-        List<Cart> cartList = cartMapper.selectCheckedCartByUserId(userId);
-        if (CollectionUtils.isEmpty(cartList)){
-            return ServerResponse.createByErrorMessage("购物车为空，或未选中任何商品");
-        }
-        ServerResponse response = this.getCartOrderItem(cartList, userId);
-        if (!response.isSuccess()){
-            return response;
-        }
-        List<OrderItem> orderItemList = (List<OrderItem>) response.getData();
-
-        List<OrderItemVO> orderItemVOList = Lists.newArrayList();
-        BigDecimal totalPrice = new BigDecimal("0");
-        for (OrderItem orderItem : orderItemList){
-            totalPrice = BigDecimalUtil.add(totalPrice.doubleValue(), orderItem.getTotalPrice().doubleValue());
-            orderItemVOList.add(this.assembleOrderItemVO(orderItem));
-        }
-
         OrderProductVO orderProductVO = new OrderProductVO();
-        orderProductVO.setOrderItemVoList(orderItemVOList);
-        orderProductVO.setTotalPrice(totalPrice);
-        orderProductVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix"));
 
+        List<OrderItem> orderItemList = orderItemMapper.selectByUserId(userId);
+        if (CollectionUtils.isEmpty(orderItemList)){
+            return ServerResponse.createByErrorMessage("还没下单，快去shopping吧！");
+        }
+        List<OrderItemVO> orderItemVOList = Lists.newArrayList();
+        BigDecimal totalPayment = new BigDecimal("0");
+        for (OrderItem orderItem : orderItemList){
+            totalPayment = BigDecimalUtil.add(totalPayment.doubleValue(), orderItem.getTotalPrice().doubleValue());
+            OrderItemVO orderItemVO = this.assembleOrderItemVO(orderItem);
+            orderItemVOList.add(orderItemVO);
+        }
+        orderProductVO.setOrderItemVoList(orderItemVOList);
+        orderProductVO.setTotalPrice(totalPayment);
+        orderProductVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix"));
         return ServerResponse.createBySuccess(orderProductVO);
     }
 
     public ServerResponse getOrderDetail(Integer userId, Long orderNo){
-        Order order = orderMapper.selectByUserIdOrderNum(userId, orderNo);
+        Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
         if (order == null){
             return ServerResponse.createByErrorMessage("订单不存在");
         }
@@ -295,9 +290,8 @@ public class OrderServiceImpl implements IOrderService{
         PageHelper.startPage(pageNum,pageSize);
         List<Order> orderList = orderMapper.selectByUserId(userId);
         List<OrderVO> orderVOList = assembleOrderVOlist(orderList, userId);
-        PageInfo info = new PageInfo(orderList);
-        info.setList(orderVOList);
-        return ServerResponse.createByError().createBySuccess(info);
+        PageInfo<OrderVO> info = new PageInfo<>(orderVOList);
+        return ServerResponse.createBySuccess(info);
     }
 
     private List<OrderVO> assembleOrderVOlist(List<Order> orderList, Integer userId){
@@ -323,7 +317,7 @@ public class OrderServiceImpl implements IOrderService{
 
     public ServerResponse pay(Long orderNum, Integer userId, String path){
         Map<String, String> resultMap = Maps.newHashMap();
-        Order order = orderMapper.selectByUserIdOrderNum(userId, orderNum);
+        Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNum);
         if (order == null){
             return ServerResponse.createByErrorMessage("找不到该订单");
         }
@@ -476,7 +470,7 @@ public class OrderServiceImpl implements IOrderService{
     }
 
     public ServerResponse queryOrderPayStatus(Integer userId, Long orderNo){
-        Order order = orderMapper.selectByUserIdOrderNum(userId, orderNo);
+        Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
         if (order == null){
             return ServerResponse.createByErrorMessage("该用户并没有该订单,查询无效");
         }
@@ -518,5 +512,19 @@ public class OrderServiceImpl implements IOrderService{
         List<OrderItem> orderItemList = orderItemMapper.selectByOrderNo(order.getOrderNo());
         OrderVO orderVO = this.assembleOrderVO(order, orderItemList);
         return ServerResponse.createBySuccess(orderVO);
+    }
+
+    public ServerResponse manageSendGoods(Long orderNo){
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if (order == null){
+            return ServerResponse.createByErrorMessage("没有该订单");
+        }
+        if (order.getStatus() == Const.OrderStateEnum.PAID.getCode()){
+            order.setStatus(Const.OrderStateEnum.SHIPPED.getCode());
+            order.setSendTime(new Date());
+            orderMapper.updateByPrimaryKeySelective(order);
+            return ServerResponse.createByErrorMessage("发货成功");
+        }
+        return ServerResponse.createByErrorMessage("付款失败，付款之后发货");
     }
 }

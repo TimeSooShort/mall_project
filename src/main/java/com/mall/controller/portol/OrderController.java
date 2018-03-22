@@ -147,6 +147,8 @@ public class OrderController {
         return iOrderService.getOrderDetail(user.getId(), orderNo);
     }
 
+    @RequestMapping("list.do")
+    @ResponseBody
     public ServerResponse getOrderList(HttpSession session,
                                        @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSie,
                                        @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum){

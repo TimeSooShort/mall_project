@@ -7,6 +7,7 @@ import com.mall.common.ServerResponse;
 import com.mall.pojo.User;
 import com.mall.service.IOrderService;
 import com.mall.service.IUserService;
+import com.mall.vo.OrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -62,14 +63,29 @@ public class OrderManageController {
 
     @RequestMapping("detail.do")
     @ResponseBody
-    public ServerResponse<PageInfo> getDetail(HttpSession session, Long orderNo){
+    public ServerResponse<OrderVO> getDetail(HttpSession session, Long orderNo){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
                     ResponseCode.NEED_LOGIN.getDesc());
         }
         if (iUserService.checkAdminRole(user).isSuccess()){
-            return iOrderService
+            return iOrderService.manageDetail(orderNo);
+        } else {
+            return ServerResponse.createByErrorMessage("你无权这样做");
+        }
+    }
+
+    @RequestMapping("send_goods.do")
+    @ResponseBody
+    public ServerResponse sendsGoods(HttpSession session, Long orderNo){
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null){
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
+                    ResponseCode.NEED_LOGIN.getDesc());
+        }
+        if (iUserService.checkAdminRole(user).isSuccess()){
+            return iOrderService.manageSendGoods(orderNo);
         } else {
             return ServerResponse.createByErrorMessage("你无权这样做");
         }
