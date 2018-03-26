@@ -19,13 +19,13 @@ public class JsonUtil {
 
     private static ObjectMapper objectMapper = new ObjectMapper();
     static {
-        //对象的所有字段全部列入
+        //对象的所有字段全部列入,NON_DEFAULT传的值与默认相也则不显示;
         objectMapper.setSerializationInclusion(Inclusion.ALWAYS);
 
         //取消默认转换timestamps形式
         objectMapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS,false);
 
-        //忽略空Bean转json的错误
+        //忽略空Bean转json的错误，空就转成一个空json
         objectMapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS,false);
 
         //所有的日期格式都统一为以下的样式，即yyyy-MM-dd HH:mm:ss
@@ -60,7 +60,7 @@ public class JsonUtil {
     }
 
     public static <T> T str2Obj(String str, Class<T> clazz){
-        //对于isBlank（）方法，如果字符串中含有空，则返回false
+        //str == " "也可，所以用isEmpty()
         if (StringUtils.isEmpty(str) || clazz == null){
             return null;
         }

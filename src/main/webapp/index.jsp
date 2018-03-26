@@ -3,6 +3,8 @@
 <html>
 <body>
 <h2>Hello World!</h2>
+<h2>Tomcat1111!</h2>
+<h2>Tomcat1111!</h2>
 
 springmvc上传文件
 <form name="form1" action="/manage/product/upload.do" method="post" enctype="multipart/form-data">
