@@ -9,12 +9,14 @@ import com.mall.service.IUserService;
 import com.mall.util.CooKieUtil;
 import com.mall.util.JsonUtil;
 import com.mall.util.RedisPoolUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
@@ -49,8 +51,12 @@ public class UserController {
 
     @RequestMapping(value="logout.do", method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<String> logout(HttpSession session){
-        session.removeAttribute(Const.CURRENT_USER);
+    public ServerResponse<String> logout(HttpServletRequest request, HttpServletResponse response){
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        CooKieUtil.delLoginCookie(request, response);
+        RedisPoolUtil.del(loginToken);
+
+//        session.removeAttribute(Const.CURRENT_USER);
         return ServerResponse.createBySuccess();
     }
 
@@ -68,8 +74,16 @@ public class UserController {
 
     @RequestMapping(value = "get_user_info.do", method = RequestMethod.POST)
     @ResponseBody
-    public ServerResponse<User> getUserInfo(HttpSession session){
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<User> getUserInfo(HttpServletRequest request){
+//        User user = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("");
+        }
+        String urlJsonStr = RedisPoolUtil.get(loginToken);
+        User user = JsonUtil.str2Obj(urlJsonStr, User.class);
+
         if (user != null){
             return ServerResponse.createBySuccess(user);
         }
