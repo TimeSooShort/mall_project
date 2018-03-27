@@ -1,18 +1,22 @@
 package com.mall.controller.portol;
 
+import org.apache.commons.lang3.StringUtils;
 import com.github.pagehelper.PageInfo;
-import com.mall.common.Const;
 import com.mall.common.ResponseCode;
 import com.mall.common.ServerResponse;
 import com.mall.pojo.Shipping;
 import com.mall.pojo.User;
 import com.mall.service.IShippingService;
+import com.mall.util.CooKieUtil;
+import com.mall.util.JsonUtil;
+import com.mall.util.RedisPoolUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
 
@@ -28,8 +32,16 @@ public class ShippingController {
 
     @RequestMapping("add.do")
     @ResponseBody
-    public ServerResponse<Map> addAdress(HttpSession session, Shipping shipping){
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<Map> addAdress(HttpServletRequest request, Shipping shipping){
+//        User user = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String token = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(token)){
+            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisPoolUtil.get(token);
+        User user = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
                     ResponseCode.NEED_LOGIN.getDesc());
@@ -39,8 +51,16 @@ public class ShippingController {
 
     @RequestMapping("del.do")
     @ResponseBody
-    public ServerResponse<String> delAdress(HttpSession session, Integer shippingId){
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<String> delAdress(HttpServletRequest request, Integer shippingId){
+//        User user = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String token = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(token)){
+            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisPoolUtil.get(token);
+        User user = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
                     ResponseCode.NEED_LOGIN.getDesc());
@@ -50,8 +70,16 @@ public class ShippingController {
 
     @RequestMapping("update.do")
     @ResponseBody
-    public ServerResponse<String> updateAdress(HttpSession session, Shipping shipping){
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<String> updateAdress(HttpServletRequest request, Shipping shipping){
+//        User user = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String token = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(token)){
+            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisPoolUtil.get(token);
+        User user = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
                     ResponseCode.NEED_LOGIN.getDesc());
@@ -62,8 +90,16 @@ public class ShippingController {
 
     @RequestMapping("select.do")
     @ResponseBody
-    public ServerResponse<Shipping> selectAdress(HttpSession session, Integer shippingId){
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<Shipping> selectAdress(HttpServletRequest request, Integer shippingId){
+//        User user = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String token = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(token)){
+            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisPoolUtil.get(token);
+        User user = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
                     ResponseCode.NEED_LOGIN.getDesc());
@@ -73,10 +109,18 @@ public class ShippingController {
 
     @RequestMapping("list.do")
     @ResponseBody
-    public ServerResponse<PageInfo> listAdress(HttpSession session,
+    public ServerResponse<PageInfo> listAdress(HttpServletRequest request,
                                                @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                                @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+//        User user = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String token = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(token)){
+            return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisPoolUtil.get(token);
+        User user = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (user == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
                     ResponseCode.NEED_LOGIN.getDesc());
