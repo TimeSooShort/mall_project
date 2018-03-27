@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class CooKieUtil {
 
-    private static final String COOKIE_DOMAIN = ".mall.com"; //设置一级域名
+    private static final String COOKIE_DOMAIN = "mall.com"; //设置一级域名
     private static final String COOKIE_NAME = "mall_login_token";
 
     //domain与path：同级之间不能互访对方的cookie，子级共享父级的cookie
