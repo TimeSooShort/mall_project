@@ -146,7 +146,7 @@ public class UserController {
         ServerResponse<User> response = iUserService.updateInformation(user);
         if (response.isSuccess()){
             String updateUserJsonStr = JsonUtil.obj2String(response.getData());
-            RedisPoolUtil.set(loginToken, updateUserJsonStr);
+            RedisPoolUtil.setEx(loginToken, updateUserJsonStr, Const.RedisCacheExTime.REDIS_SESSION_EXTIME);
         }
         return response;
     }
