@@ -5,6 +5,7 @@ import com.mall.pojo.User;
 import com.mall.util.CooKieUtil;
 import com.mall.util.JsonUtil;
 import com.mall.util.RedisPoolUtil;
+import com.mall.util.RedisShardedPoolUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.*;
@@ -22,10 +23,10 @@ public class SessionExpireFilter implements Filter{
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         String token = CooKieUtil.readLoginCookie(request);
         if (StringUtils.isNotEmpty(token)){
-            String userJsonStr = RedisPoolUtil.get(token);
+            String userJsonStr = RedisShardedPoolUtil.get(token);
             User user = JsonUtil.str2Obj(userJsonStr, User.class);
             if (user != null){
-                RedisPoolUtil.expire(token, Const.RedisCacheExTime.REDIS_SESSION_EXTIME);
+                RedisShardedPoolUtil.expire(token, Const.RedisCacheExTime.REDIS_SESSION_EXTIME);
             }
         }
         filterChain.doFilter(servletRequest, servletResponse);

@@ -1,5 +1,6 @@
 package com.mall.controller.portol;
 
+import com.mall.util.RedisShardedPoolUtil;
 import org.apache.commons.lang3.StringUtils;
 import com.mall.common.Const;
 import com.mall.common.ResponseCode;
@@ -8,7 +9,6 @@ import com.mall.pojo.User;
 import com.mall.service.ICartService;
 import com.mall.util.CooKieUtil;
 import com.mall.util.JsonUtil;
-import com.mall.util.RedisPoolUtil;
 import com.mall.vo.CartProductListVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.List;
 
 /**
  * Created by Administrator on 2018/3/1.
@@ -38,7 +36,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -57,7 +55,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -76,7 +74,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -95,7 +93,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -114,7 +112,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -133,7 +131,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -152,7 +150,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -171,7 +169,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -190,7 +188,7 @@ public class CartController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){

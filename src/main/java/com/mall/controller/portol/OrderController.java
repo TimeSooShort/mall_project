@@ -2,6 +2,7 @@ package com.mall.controller.portol;
 
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
+import com.mall.util.RedisShardedPoolUtil;
 import org.apache.commons.lang3.StringUtils;
 import com.alipay.demo.trade.config.Configs;
 import com.google.common.collect.Maps;
@@ -12,7 +13,6 @@ import com.mall.pojo.User;
 import com.mall.service.IOrderService;
 import com.mall.util.CooKieUtil;
 import com.mall.util.JsonUtil;
-import com.mall.util.RedisPoolUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -46,7 +46,7 @@ public class OrderController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -107,7 +107,7 @@ public class OrderController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -133,7 +133,7 @@ public class OrderController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -151,7 +151,7 @@ public class OrderController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -169,7 +169,7 @@ public class OrderController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -187,7 +187,7 @@ public class OrderController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
@@ -207,7 +207,7 @@ public class OrderController {
         if (StringUtils.isEmpty(token)){
             return ServerResponse.createByErrorMessage("用户未登录,无法获取当前用户的信息");
         }
-        String userJsonStr = RedisPoolUtil.get(token);
+        String userJsonStr = RedisShardedPoolUtil.get(token);
         User user = JsonUtil.str2Obj(userJsonStr, User.class);
 
         if (user == null){
