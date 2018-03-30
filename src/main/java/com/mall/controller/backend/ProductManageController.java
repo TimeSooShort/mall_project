@@ -49,21 +49,22 @@ public class ProductManageController {
     public ServerResponse<String> productSaveOrUpdate(HttpServletRequest request, Product product){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return  iProductService.saveOrUpdateProduct(product);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return  iProductService.saveOrUpdateProduct(product);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
+//        }
+        return  iProductService.saveOrUpdateProduct(product);
     }
 
     @RequestMapping("set_sale_status.do")
@@ -71,21 +72,22 @@ public class ProductManageController {
     public ServerResponse<String> setSaleStatus(HttpServletRequest request, Integer productId, Integer status){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return  iProductService.setSaleStatus(productId, status);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return  iProductService.setSaleStatus(productId, status);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
+//        }
+        return  iProductService.setSaleStatus(productId, status);
     }
 
     @RequestMapping("detail.do")
@@ -93,21 +95,22 @@ public class ProductManageController {
     public ServerResponse<ProductDetailVO> productDetail(HttpServletRequest request, Integer productId){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return iProductService.manageProductDetail(productId);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return iProductService.manageProductDetail(productId);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
+//        }
+        return iProductService.manageProductDetail(productId);
     }
 
     @RequestMapping("list.do")
@@ -117,21 +120,22 @@ public class ProductManageController {
                                                    @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return iProductService.getProductList(pageNum, pageSize);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return iProductService.getProductList(pageNum, pageSize);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
+//        }
+        return iProductService.getProductList(pageNum, pageSize);
     }
 
     @RequestMapping("search.do")
@@ -141,21 +145,22 @@ public class ProductManageController {
                                                    @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return iProductService.searchProduct(productName, productId, pageNum, pageSize);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return iProductService.searchProduct(productName, productId, pageNum, pageSize);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
+//        }
+        return iProductService.searchProduct(productName, productId, pageNum, pageSize);
     }
 
     @RequestMapping("upload.do")
@@ -163,28 +168,36 @@ public class ProductManageController {
     public ServerResponse upload(@RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            String path = request.getSession().getServletContext().getRealPath("upload");
+//            String targetName = iFileService.upload(file, path);
+//            String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetName;
+//
+//            Map<String, String> fileMap = Maps.newHashMap();
+//            fileMap.put("uri", targetName);
+//            fileMap.put("url", url);
+//            return ServerResponse.createBySuccess(fileMap);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
+//        }
+        String path = request.getSession().getServletContext().getRealPath("upload");
+        String targetName = iFileService.upload(file, path);
+        String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetName;
 
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            String path = request.getSession().getServletContext().getRealPath("upload");
-            String targetName = iFileService.upload(file, path);
-            String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetName;
-
-            Map<String, String> fileMap = Maps.newHashMap();
-            fileMap.put("uri", targetName);
-            fileMap.put("url", url);
-            return ServerResponse.createBySuccess(fileMap);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
-        }
+        Map<String, String> fileMap = Maps.newHashMap();
+        fileMap.put("uri", targetName);
+        fileMap.put("url", url);
+        return ServerResponse.createBySuccess(fileMap);
     }
 
     /**
@@ -206,38 +219,51 @@ public class ProductManageController {
         Map<String, Object> resultMap = Maps.newHashMap();
 //        User user = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            resultMap.put("success", false);
+//            resultMap.put("msg", "请以管理员身份登录");
+//            return resultMap;
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User user = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (user == null){
+//            resultMap.put("success", false);
+//            resultMap.put("msg", "请以管理员身份登录");
+//            return resultMap;
+//        }
+//        if (iUserService.checkAdminRole(user).isSuccess()){
+//            String path = request.getSession().getServletContext().getRealPath("upload");
+//            String targetFileName = iFileService.upload(file, path);
+//            if (targetFileName == null){
+//                resultMap.put("success", false);
+//                resultMap.put("msg", "上传失败");
+//                return resultMap;
+//            }
+//            String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetFileName;
+//            resultMap.put("success", true);
+//            resultMap.put("msg", "上传成功");
+//            resultMap.put("file_path", url);
+//            response.addHeader("Access-Control-Allow-Headers","X-File-Name");
+//            return resultMap;
+//        } else {
+//            resultMap.put("success", false);
+//            resultMap.put("msg", "无权限操作");
+//            return resultMap;
+//        }
+        String path = request.getSession().getServletContext().getRealPath("upload");
+        String targetFileName = iFileService.upload(file, path);
+        if (targetFileName == null){
             resultMap.put("success", false);
-            resultMap.put("msg", "请以管理员身份登录");
+            resultMap.put("msg", "上传失败");
             return resultMap;
         }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User user = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (user == null){
-            resultMap.put("success", false);
-            resultMap.put("msg", "请以管理员身份登录");
-            return resultMap;
-        }
-        if (iUserService.checkAdminRole(user).isSuccess()){
-            String path = request.getSession().getServletContext().getRealPath("upload");
-            String targetFileName = iFileService.upload(file, path);
-            if (targetFileName == null){
-                resultMap.put("success", false);
-                resultMap.put("msg", "上传失败");
-                return resultMap;
-            }
-            String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetFileName;
-            resultMap.put("success", true);
-            resultMap.put("msg", "上传成功");
-            resultMap.put("file_path", url);
-            response.addHeader("Access-Control-Allow-Headers","X-File-Name");
-            return resultMap;
-        } else {
-            resultMap.put("success", false);
-            resultMap.put("msg", "无权限操作");
-            return resultMap;
-        }
+        String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetFileName;
+        resultMap.put("success", true);
+        resultMap.put("msg", "上传成功");
+        resultMap.put("file_path", url);
+        response.addHeader("Access-Control-Allow-Headers","X-File-Name");
+        return resultMap;
     }
 }

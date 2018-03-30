@@ -39,7 +39,7 @@ public class AuthorityInterceptor implements HandlerInterceptor {
         log.info("preHandle");
         HandlerMethod handlerMethod = (HandlerMethod) handler;
         String methodName = handlerMethod.getMethod().getName(); //方法名
-        String className = handlerMethod.getBean().getClass().getName();//类名
+        String className = handlerMethod.getBean().getClass().getSimpleName();//没有重复类名，所以不需要包名
 
         StringBuilder paramsBuilder = new StringBuilder();
         Map paramMap = request.getParameterMap();

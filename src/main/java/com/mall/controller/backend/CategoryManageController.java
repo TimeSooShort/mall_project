@@ -28,8 +28,8 @@ import java.util.List;
 @RequestMapping("/manage/category/")
 public class CategoryManageController {
 
-    @Autowired
-    private IUserService iUserService;
+//    @Autowired
+//    private IUserService iUserService;
 
     @Autowired
     private ICategoryService iCategoryService;
@@ -39,21 +39,22 @@ public class CategoryManageController {
     public ServerResponse addCategory(HttpServletRequest request, String categoryName, @RequestParam(value = "parentId", defaultValue = "0") int parentId){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return iCategoryService.addCategory(categoryName, parentId);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return iCategoryService.addCategory(categoryName, parentId);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
+//        }
+        return iCategoryService.addCategory(categoryName, parentId);
     }
 
     @RequestMapping("set_category_name.do")
@@ -61,21 +62,23 @@ public class CategoryManageController {
     public ServerResponse setCategoryName(HttpServletRequest request, Integer categoryId, String categoryName){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return iCategoryService.updateCategoryName(categoryId, categoryName);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
+//        }
 
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return iCategoryService.updateCategoryName(categoryId, categoryName);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
-        }
+        return iCategoryService.updateCategoryName(categoryId, categoryName);
     }
 
     @RequestMapping("get_category.do")
@@ -83,21 +86,22 @@ public class CategoryManageController {
     public ServerResponse<List<Category>> getChildrenParallelCategory(HttpServletRequest request, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return iCategoryService.getChildrenParallelCategory(categoryId);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return iCategoryService.getChildrenParallelCategory(categoryId);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
+//        }
+        return iCategoryService.getChildrenParallelCategory(categoryId);
     }
 
     @RequestMapping("get_deep_category.do")
@@ -106,20 +110,21 @@ public class CategoryManageController {
             @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId){
 //        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
 
-        String loginToken = CooKieUtil.readLoginCookie(request);
-        if (StringUtils.isEmpty(loginToken)){
-            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
-        }
-        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
-        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
-
-        if (currentUser == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
-        }
-        if (iUserService.checkAdminRole(currentUser).isSuccess()){
-            return iCategoryService.selectCategoryAndChildrenById(categoryId);
-        }else {
-            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
-        }
+//        String loginToken = CooKieUtil.readLoginCookie(request);
+//        if (StringUtils.isEmpty(loginToken)){
+//            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+//        }
+//        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+//        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+//
+//        if (currentUser == null){
+//            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请登录");
+//        }
+//        if (iUserService.checkAdminRole(currentUser).isSuccess()){
+//            return iCategoryService.selectCategoryAndChildrenById(categoryId);
+//        }else {
+//            return ServerResponse.createByErrorMessage("只有管理员才能拥有此项权限");
+//        }
+        return iCategoryService.selectCategoryAndChildrenById(categoryId);
     }
 }
