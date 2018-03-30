@@ -10,8 +10,12 @@ import com.mall.pojo.User;
 import com.mall.service.IFileService;
 import com.mall.service.IProductService;
 import com.mall.service.IUserService;
+import com.mall.util.CooKieUtil;
+import com.mall.util.JsonUtil;
 import com.mall.util.PropertiesUtil;
+import com.mall.util.RedisShardedPoolUtil;
 import com.mall.vo.ProductDetailVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,8 +46,16 @@ public class ProductManageController {
 
     @RequestMapping("save.do")
     @ResponseBody
-    public ServerResponse<String> productSaveOrUpdate(HttpSession session, Product product){
-        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<String> productSaveOrUpdate(HttpServletRequest request, Product product){
+//        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (currentUser == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
         }
@@ -56,8 +68,16 @@ public class ProductManageController {
 
     @RequestMapping("set_sale_status.do")
     @ResponseBody
-    public ServerResponse<String> setSaleStatus(HttpSession session, Integer productId, Integer status){
-        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<String> setSaleStatus(HttpServletRequest request, Integer productId, Integer status){
+//        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (currentUser == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
         }
@@ -70,8 +90,16 @@ public class ProductManageController {
 
     @RequestMapping("detail.do")
     @ResponseBody
-    public ServerResponse<ProductDetailVO> productDetail(HttpSession session, Integer productId){
-        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse<ProductDetailVO> productDetail(HttpServletRequest request, Integer productId){
+//        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (currentUser == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
         }
@@ -84,10 +112,18 @@ public class ProductManageController {
 
     @RequestMapping("list.do")
     @ResponseBody
-    public ServerResponse<PageInfo> getProductList(HttpSession session,
+    public ServerResponse<PageInfo> getProductList(HttpServletRequest request,
                                                    @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                                    @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
-        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+//        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (currentUser == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
         }
@@ -100,10 +136,18 @@ public class ProductManageController {
 
     @RequestMapping("search.do")
     @ResponseBody
-    public ServerResponse<PageInfo> productSearch(HttpSession session, String productName, Integer productId,
+    public ServerResponse<PageInfo> productSearch(HttpServletRequest request, String productName, Integer productId,
                                                    @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
                                                    @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize){
-        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+//        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (currentUser == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
         }
@@ -116,8 +160,16 @@ public class ProductManageController {
 
     @RequestMapping("upload.do")
     @ResponseBody
-    public ServerResponse upload(HttpSession session,@RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request){
-        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+    public ServerResponse upload(@RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request){
+//        User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            return ServerResponse.createByErrorMessage("用户未登录，无法获取当前用户的信息");
+        }
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+        User currentUser = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (currentUser == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
         }
@@ -142,7 +194,7 @@ public class ProductManageController {
      *       "msg": "error message", # optional
      *       "file_path": "[real file path]"
      *       }
-     * @param session
+     *
      * @param file
      * @param request
      * @param response
@@ -150,9 +202,19 @@ public class ProductManageController {
      */
     @RequestMapping("richtext_img_upload.do")
     @ResponseBody
-    public Map richtextImgUpload(HttpSession session,@RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request, HttpServletResponse response){
+    public Map richtextImgUpload(@RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request, HttpServletResponse response){
         Map<String, Object> resultMap = Maps.newHashMap();
-        User user = (User) session.getAttribute(Const.CURRENT_USER);
+//        User user = (User) session.getAttribute(Const.CURRENT_USER);
+
+        String loginToken = CooKieUtil.readLoginCookie(request);
+        if (StringUtils.isEmpty(loginToken)){
+            resultMap.put("success", false);
+            resultMap.put("msg", "请以管理员身份登录");
+            return resultMap;
+        }
+        String userJsonStr = RedisShardedPoolUtil.get(loginToken);
+        User user = JsonUtil.str2Obj(userJsonStr, User.class);
+
         if (user == null){
             resultMap.put("success", false);
             resultMap.put("msg", "请以管理员身份登录");
