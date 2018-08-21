@@ -89,11 +89,18 @@ public class ProductServiceImpl implements IProductService {
         return ServerResponse.createBySuccess(productDetailVO);
     }
 
-    public ProductDetailVO assembleProductDetailVO(Product product){
+    /**
+     * 封装原Product，增加了两个字段：imageHost，parentCategoryId
+     * 添加imageHost是因为前端图片的地址src= imageHost + mainImage， imageHost是图片服务器域名
+     * mainImage是图片名。
+     * @param product Product
+     * @return ProductDetailVO
+     */
+    private ProductDetailVO assembleProductDetailVO(Product product){
         ProductDetailVO productDetailVO = new ProductDetailVO();
         productDetailVO.setId(product.getId());
         productDetailVO.setCategoryId(product.getCategoryId());
-        productDetailVO.setDetail(productDetailVO.getDetail());
+        productDetailVO.setDetail(product.getDetail());
         productDetailVO.setMainImage(product.getMainImage());
         productDetailVO.setName(product.getName());
         productDetailVO.setPrice(product.getPrice());
@@ -103,12 +110,14 @@ public class ProductServiceImpl implements IProductService {
         productDetailVO.setSubtitle(product.getSubtitle());
 
         productDetailVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix", "http://img.happymmall.com/"));
+        // 先通过该产品的categoryId获得其Category对象，再获取其parentId的值
         Category category = categoryMapper.selectByPrimaryKey(productDetailVO.getCategoryId());
         if (category == null){
-            productDetailVO.setParentCategoryId(0); //默认根节点
+            productDetailVO.setParentCategoryId(0); //说明该商品不属于现存的任一品类范围
         }else {
             productDetailVO.setParentCategoryId(category.getParentId());
         }
+        // 对时间进行处理转化
         productDetailVO.setCreateTime(DateTimeUtil.dateToStr(product.getCreateTime()));
         productDetailVO.setUpdateTime(DateTimeUtil.dateToStr(product.getUpdateTime()));
         return productDetailVO;
@@ -129,6 +138,11 @@ public class ProductServiceImpl implements IProductService {
         return ServerResponse.createBySuccess(pageResult);
     }
 
+    /**
+     * 给原product加一个字段imageHost，图片的地址src= imageHost + mainImage
+     * @param product 原商品信息
+     * @return ProductListVO
+     */
     private ProductListVO assembleProductListVO(Product product){
         ProductListVO productListVO = new ProductListVO();
         productListVO.setId(product.getId());
@@ -145,7 +159,7 @@ public class ProductServiceImpl implements IProductService {
     public ServerResponse<PageInfo> searchProduct(String productName, Integer productId, Integer pageNum, Integer pageSize){
         PageHelper.startPage(pageNum, pageSize);
         if (StringUtils.isNotBlank(productName)){
-            productName = new StringBuilder().append("%").append(productName).append("%").toString();
+            productName = "%" + productName + "%";
         }
         List<Product> productList = productMapper.selectProductByNameAndId(productName, productId);
         List<ProductListVO> productListVOList = Lists.newArrayList();
@@ -157,48 +171,76 @@ public class ProductServiceImpl implements IProductService {
         return ServerResponse.createBySuccess(pageInfo);
     }
 
+    /**
+     * 获取产品详情，对应前端的商品详情页
+     * @param productId 产品id
+     * @return 返回封装后的Product对象ProductDetailVO
+     */
     public ServerResponse<ProductDetailVO> getDetail(Integer productId){
         if (productId == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), ResponseCode.ILLEGAL_ARGUMENT.getDesc());
         }
         Product product = productMapper.selectByPrimaryKey(productId);
         if (product == null){
-            return ServerResponse.createByErrorMessage("产品已下架或删除");
+            return ServerResponse.createByErrorMessage("产品已删除");
         }
         if (product.getStatus() != Const.ProductStatusEnum.ON_SALE.getCode()){
-            return ServerResponse.createByErrorMessage("产品已下架或删除");
+            return ServerResponse.createByErrorMessage("产品已下架");
         }
         ProductDetailVO productDetailVO = assembleProductDetailVO(product);
         return ServerResponse.createBySuccess(productDetailVO);
     }
 
+
+    /**
+     * 通过关键字或品类id来获取相关商品列表
+     * @param keyword 关键字
+     * @param categoryId  商品信息
+     * @param pageNum 第几页
+     * @param pageSize 一页显示几个商品
+     * @param orderBy 商品的排列顺寻
+     * @return 返回PageInfo对象
+     */
     public ServerResponse<PageInfo> getProductByKeywordAndCategoryId(String keyword, Integer categoryId, Integer pageNum, Integer pageSize, String orderBy){
+        // keyword，categoryId不能同时为null
         if (StringUtils.isBlank(keyword) && categoryId == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), ResponseCode.ILLEGAL_ARGUMENT.getDesc());
         }
+        // 用来存储该categoryId以及其子孙产品的categoryId的集合
         List<Integer> categoryIdList = Lists.newArrayList();
         if (categoryId != null){
+            // 由品类id来查询该品类
             Category category = categoryMapper.selectByPrimaryKey(categoryId);
+            // 若该品类不存在，且keyword为null，则返回一个包含空list的PageInfo
             if (category == null && StringUtils.isBlank(keyword)){
                 PageHelper.startPage(pageNum, pageSize);
                 List<ProductListVO> productListVO = Lists.newArrayList();
                 PageInfo<ProductListVO> pageInfo = new PageInfo<>(productListVO);
                 return ServerResponse.createBySuccess(pageInfo);
             }
+            // 调用CategoryService里的selectCategoryAndChildrenById方法，
+            // 通过递归将给categoryId及其子孙categoryId全部加入list
             categoryIdList = iCategoryService.selectCategoryAndChildrenById(categoryId).getData();
         }
+        // 这里没有采用else if是因为后端可以同时接受categoryId和keyword，并根据二者来查询
+        // 不过前端的处理是只传来二者中的一个，前端页面搜索查找传过来的是keyword，
+        // 首页的商品类别点击传来的是categoryId
         if (StringUtils.isNotBlank(keyword)){
-            keyword = new StringBuilder().append("%").append(keyword).append('%').toString();
+            keyword = "%" + keyword + '%';
         }
 
         PageHelper.startPage(pageNum,pageSize);
+        // 前端会传过来三个可能值：default，price_desc，price_asc，对default选择忽略它，即默认顺序
         if (Const.ProductListOrderBy.PRICE_ASC_DESC.contains(orderBy)){
+            // 这里告诉PageHelper按照字段price的desc/asc降升序来排列
             String[] array = orderBy.split("_");
             PageHelper.orderBy(array[0]+" "+array[1]);
         }
+        // 获取产品列表
         List<Product> productList = productMapper.selectByNameAndCategoryIds(StringUtils.isBlank(keyword)? null: keyword,
                 categoryIdList.size() == 0? null:categoryIdList);
         List<ProductListVO> productListVO = Lists.newArrayList();
+        // 将每个product封装成ProductListVo，其实只是增加了一个imageHost字段
         for (Product productItem : productList){
             productListVO.add(assembleProductListVO(productItem));
         }

@@ -2,6 +2,9 @@ package com.mall.util;
 
 import java.security.MessageDigest;
 
+/**
+ *  对密码进行MD5加密的工具类
+ */
 public class MD5Util {
 
     private static String byteArrayToHexString(byte b[]) {
@@ -24,8 +27,8 @@ public class MD5Util {
     /**
      * 返回大写MD5
      *
-     * @param origin
-     * @param charsetname
+     * @param origin 密码字符串
+     * @param charsetname charset
      * @return
      */
     private static String MD5Encode(String origin, String charsetname) {
@@ -43,6 +46,7 @@ public class MD5Util {
     }
 
     public static String MD5EncodeUtf8(String origin) {
+        origin = origin + PropertiesUtil.getProperty("password.salt", "");
         return MD5Encode(origin, "utf-8");
     }
 

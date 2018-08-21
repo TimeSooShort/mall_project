@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by Administrator on 2018/1/2.
+ *  利用guava的cache来缓存token
  */
 public class TokenCache {
 

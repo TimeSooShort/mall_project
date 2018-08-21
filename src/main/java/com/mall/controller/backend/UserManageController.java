@@ -22,9 +22,17 @@ public class UserManageController {
     @Autowired
     private IUserService iUserService;
 
+    /**
+     * 后台管理员登录
+     * @param username 用户民
+     * @param password 密码
+     * @param session 保存登录信息
+     * @return 返回结果
+     */
     @RequestMapping(value = "login.do", method = RequestMethod.POST)
     @ResponseBody
     public ServerResponse<User> login(String username, String password, HttpSession session){
+        // 直接根据用户名，密码获取记录，检查其role字段是否是等于1（管理员），不等于则阻止登录
         ServerResponse<User> response = iUserService.login(username, password);
         if (response.isSuccess()){
             User user = response.getData();

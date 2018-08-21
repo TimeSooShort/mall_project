@@ -17,7 +17,7 @@ import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
- * Created by Administrator on 2018/2/24.
+ * 分类管理模块，每个商品都有一个categoryId，代表其品类
  */
 @Controller
 @RequestMapping("/manage/category/")
@@ -29,6 +29,13 @@ public class CategoryManageController {
     @Autowired
     private ICategoryService iCategoryService;
 
+    /**
+     * 添加品类
+     * @param session 确认登录状态即权限
+     * @param categoryName 品类名
+     * @param parentId 要添加的品类的父品类的id, 默认为0
+     * @return 返回结果情况
+     */
     @RequestMapping("add_category.do")
     @ResponseBody
     public ServerResponse addCategory(HttpSession session, String categoryName, @RequestParam(value = "parentId", defaultValue = "0") int parentId){
@@ -43,6 +50,13 @@ public class CategoryManageController {
         }
     }
 
+    /**
+     * 修改品类名字
+     * @param session 确认登录状态即权限
+     * @param categoryId 品类id
+     * @param categoryName 品类名
+     * @return
+     */
     @RequestMapping("set_category_name.do")
     @ResponseBody
     public ServerResponse setCategoryName(HttpSession session, Integer categoryId, String categoryName){
@@ -57,6 +71,12 @@ public class CategoryManageController {
         }
     }
 
+    /**
+     *  根据categoryId来获取该品类的子节点（只到儿子节点）
+     * @param session 确认登录状态即权限
+     * @param categoryId 品类id
+     * @return ServerResponse<List<Category>>
+     */
     @RequestMapping("get_category.do")
     @ResponseBody
     public ServerResponse<List<Category>> getChildrenParallelCategory(HttpSession session, @RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId){
@@ -71,6 +91,12 @@ public class CategoryManageController {
         }
     }
 
+    /**
+     * 获取当前分类id及递归子节点categoryId
+     * @param session 确认登录状态即权限
+     * @param categoryId 品类id
+     * @return
+     */
     @RequestMapping("get_deep_category.do")
     @ResponseBody
     public ServerResponse<List<Integer>> getCategoryAndDeepChildrenCategory(HttpSession session,@RequestParam(value = "categoryId", defaultValue = "0") Integer categoryId){
