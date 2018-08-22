@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
- * Created by Administrator on 2018/3/1.
+ * Controller：产品实现类
  */
 @Controller
 @RequestMapping("/product/")

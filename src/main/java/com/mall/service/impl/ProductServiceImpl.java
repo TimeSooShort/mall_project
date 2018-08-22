@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 
 /**
- * Created by Administrator on 2018/2/25.
+ * 产品服务实现类
  */
 @Service("iProductService")
 public class ProductServiceImpl implements IProductService {
@@ -38,10 +38,16 @@ public class ProductServiceImpl implements IProductService {
     @Autowired
     private ICategoryService iCategoryService;
 
+    /**
+     * 新增OR更新产品
+     * @param product 产品
+     * @return 返回结果
+     */
     public ServerResponse<String> saveOrUpdateProduct(Product product){
         if (product == null){
             return ServerResponse.createByErrorMessage("新增或更新产品参数错误");
         }
+        // 将subImages中的第一个图作为主图展示
         if (StringUtils.isNotBlank(product.getSubImages())){
             String[] subImageArray = product.getSubImages().split(",");
             if (subImageArray.length > 0){
@@ -61,6 +67,12 @@ public class ProductServiceImpl implements IProductService {
         }
     }
 
+    /**
+     * 产品上下架
+     * @param productId 产品id
+     * @param status 产品状态：1-在售
+     * @return 返回结果
+     */
     public ServerResponse<String> setSaleStatus(Integer productId, Integer status){
         if (productId == null || status == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), ResponseCode.ILLEGAL_ARGUMENT.getDesc());
@@ -73,6 +85,11 @@ public class ProductServiceImpl implements IProductService {
         return ServerResponse.createByErrorMessage("更新产品状态失败");
     }
 
+    /**
+     * 产品详情
+     * @param productId 产品id
+     * @return ProductDetailVO
+     */
     public ServerResponse<ProductDetailVO> manageProductDetail(Integer productId){
         if (productId == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), ResponseCode.ILLEGAL_ARGUMENT.getDesc());
@@ -123,13 +140,21 @@ public class ProductServiceImpl implements IProductService {
         return productDetailVO;
     }
 
+    /**
+     * 产品列表
+     * @param pageNum 第几页
+     * @param pageSize 一页包含几个
+     * @return PageInfo
+     */
     public ServerResponse<PageInfo> getProductList(Integer pageNum, Integer pageSize){
         //startPage--start
         //填充自己的sql查询逻辑
         //pageHelper-收尾
         PageHelper.startPage(pageNum, pageSize);
+        // 查询结果按id升序排列
         List<Product> productsList = productMapper.selectProductList();
         List<ProductListVO> list = Lists.newArrayList();
+        // 重新封装成ProductListVO
         for (Product productItem : productsList){
             list.add(assembleProductListVO(productItem));
         }
@@ -156,11 +181,20 @@ public class ProductServiceImpl implements IProductService {
         return productListVO;
     }
 
+    /**
+     * 产品搜索
+     * @param productName 产品名
+     * @param productId 产品id
+     * @param pageNum 第几页
+     * @param pageSize 一页包含几个
+     * @return
+     */
     public ServerResponse<PageInfo> searchProduct(String productName, Integer productId, Integer pageNum, Integer pageSize){
         PageHelper.startPage(pageNum, pageSize);
         if (StringUtils.isNotBlank(productName)){
             productName = "%" + productName + "%";
         }
+        // 这里在写sql时要考虑到productName或productId为null的情况
         List<Product> productList = productMapper.selectProductByNameAndId(productName, productId);
         List<ProductListVO> productListVOList = Lists.newArrayList();
         for (Product productItem : productList){

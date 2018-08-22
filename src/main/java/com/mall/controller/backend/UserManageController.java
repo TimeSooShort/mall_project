@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpSession;
 
 /**
- * Created by Administrator on 2018/2/23.
+ * Controller：后台用户实现类
  */
 @Controller
 @RequestMapping("/manage/user/")

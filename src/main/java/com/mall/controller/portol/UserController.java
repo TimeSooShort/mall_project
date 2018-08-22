@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpSession;
 
 /**
- * Created by Administrator on 2017/12/31.
+ * Controller：前台用户实现类
  */
 @Controller
 @RequestMapping("/user/")

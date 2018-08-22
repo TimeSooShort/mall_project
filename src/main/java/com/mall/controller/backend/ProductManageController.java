@@ -25,7 +25,7 @@ import javax.servlet.http.HttpSession;
 import java.util.Map;
 
 /**
- * Created by Administrator on 2018/2/25.
+ * Controller：后台产品实现类
  */
 @Controller
 @RequestMapping("/manage/product/")
@@ -40,6 +40,12 @@ public class ProductManageController {
     @Autowired
     private IFileService iFileService;
 
+    /**
+     * 新增OR更新产品
+     * @param session 确保登录及权限
+     * @param product 产品
+     * @return
+     */
     @RequestMapping("save.do")
     @ResponseBody
     public ServerResponse<String> productSaveOrUpdate(HttpSession session, Product product){
@@ -54,6 +60,13 @@ public class ProductManageController {
         }
     }
 
+    /**
+     * 产品上下架
+     * @param session 确保登录及权限
+     * @param productId 产品id
+     * @param status 产品状态：1-在售
+     * @return 返回结果
+     */
     @RequestMapping("set_sale_status.do")
     @ResponseBody
     public ServerResponse<String> setSaleStatus(HttpSession session, Integer productId, Integer status){
@@ -68,6 +81,12 @@ public class ProductManageController {
         }
     }
 
+    /**
+     * 产品详情
+     * @param session 确保登录及权限
+     * @param productId 产品id
+     * @return
+     */
     @RequestMapping("detail.do")
     @ResponseBody
     public ServerResponse<ProductDetailVO> productDetail(HttpSession session, Integer productId){
@@ -82,6 +101,13 @@ public class ProductManageController {
         }
     }
 
+    /**
+     * 产品列表
+     * @param session 确保登录及权限
+     * @param pageNum 第几页
+     * @param pageSize 一页包含几个
+     * @return PageInfo
+     */
     @RequestMapping("list.do")
     @ResponseBody
     public ServerResponse<PageInfo> getProductList(HttpSession session,
@@ -98,6 +124,15 @@ public class ProductManageController {
         }
     }
 
+    /**
+     * 产品搜索
+     * @param session 确保登录及权限
+     * @param productName 产品名
+     * @param productId 产品id
+     * @param pageNum 第几页
+     * @param pageSize 一页包含几个
+     * @return
+     */
     @RequestMapping("search.do")
     @ResponseBody
     public ServerResponse<PageInfo> productSearch(HttpSession session, String productName, Integer productId,
@@ -114,21 +149,30 @@ public class ProductManageController {
         }
     }
 
+    /**
+     * 文件上传
+     * @param session 确保登录及权限
+     * @param file MultipartFile
+     * @param request HttpServletRequest
+     * @return 返回一个包含上传文件的url与uri的map
+     */
     @RequestMapping("upload.do")
     @ResponseBody
-    public ServerResponse upload(HttpSession session,@RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request){
+    public ServerResponse upload(HttpSession session, @RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request){
         User currentUser = (User) session.getAttribute(Const.CURRENT_USER);
         if (currentUser == null){
             return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "未登录，请先登录");
         }
         if (iUserService.checkAdminRole(currentUser).isSuccess()){
+            // 发布后upload文件夹会被创建到webapp下
             String path = request.getSession().getServletContext().getRealPath("upload");
             String targetName = iFileService.upload(file, path);
+            // 组成文件的url返回给前端
             String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetName;
 
             Map<String, String> fileMap = Maps.newHashMap();
-            fileMap.put("uri", targetName);
-            fileMap.put("url", url);
+            fileMap.put("uri", targetName); // uri代表统一资源标识符
+            fileMap.put("url", url); // url代表统一资源定位符
             return ServerResponse.createBySuccess(fileMap);
         }else {
             return ServerResponse.createByErrorMessage("只有管理员才能执行此操作");
@@ -136,21 +180,24 @@ public class ProductManageController {
     }
 
     /**
+     *  富文本图片上传
      *       富文本中对于返回值有自己的要求,我们使用是simditor所以按照simditor的要求进行返回
      *       {
      *       "success": true/false,
      *       "msg": "error message", # optional
      *       "file_path": "[real file path]"
      *       }
-     * @param session
-     * @param file
-     * @param request
-     * @param response
-     * @return
+     * @param session 确保登录及权限
+     * @param file MultipartFile
+     * @param request HttpServletRequest
+     * @param response HttpServletResponse，用于成功后修改header
+     * @return 返回一个map
      */
     @RequestMapping("richtext_img_upload.do")
     @ResponseBody
-    public Map richtextImgUpload(HttpSession session,@RequestParam(value = "upload_file", required = false) MultipartFile file, HttpServletRequest request, HttpServletResponse response){
+    public Map richtextImgUpload(HttpSession session,@RequestParam(value = "upload_file",
+            required = false) MultipartFile file, HttpServletRequest request,
+                                 HttpServletResponse response){
         Map<String, Object> resultMap = Maps.newHashMap();
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
@@ -170,6 +217,7 @@ public class ProductManageController {
             resultMap.put("success", true);
             resultMap.put("msg", "上传成功");
             resultMap.put("file_path", url);
+            // 注意需要修改response的header
             response.addHeader("Access-Control-Allow-Headers","X-File-Name");
             return resultMap;
         } else {

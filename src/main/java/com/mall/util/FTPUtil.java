@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Created by Administrator on 2018/2/26.
+ * FTP工具类
  */
 public class FTPUtil {
     private static final Logger logger = LoggerFactory.getLogger(FTPUtil.class);
@@ -26,24 +26,38 @@ public class FTPUtil {
         this.pwd = pwd;
     }
 
+    /**
+     * 上传文件到ftp服务器
+     * @param fileList 文件列表
+     * @return 返回是否成功
+     * @throws IOException
+     */
     public static boolean uploadFile(List<File> fileList) throws IOException {
         FTPUtil ftpUtil = new FTPUtil(ftpIp, 21, ftpUser, ftpPwd);
         logger.info("开始链接ftp服务器");
         boolean result = ftpUtil.uploadFile("img", fileList);
-        logger.info("结束上传，上传结果");
+        logger.info("结束上传");
         return result;
     }
 
+    /**
+     *  将文件上传到ftp服务器，而ftp服务器在linux上是个文件夹，你需要将文件上传到ftp文件夹下的某个文件夹里，
+     *  remotePath就是这个文件夹名
+     * @param remotePath 远程路径，上传到ftp文件下的{remotePath}文件里
+     * @param fileList 文件列表
+     * @return 返回是否成功
+     * @throws IOException
+     */
     private boolean uploadFile(String remotePath, List<File> fileList) throws IOException {
         boolean upload = true;
         FileInputStream fis = null;
         if (connectServer(this.ip, this.port, this.user, this.pwd)){
             try {
-                ftpClient.changeWorkingDirectory(remotePath);
-                ftpClient.setBufferSize(1024);
+                ftpClient.changeWorkingDirectory(remotePath); //更改工作目录，传空的话就不改变
+                ftpClient.setBufferSize(1024); // 缓冲区
                 ftpClient.setControlEncoding("UTF-8");
-                ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
-                ftpClient.enterLocalPassiveMode();
+                ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE); // 设置文件类型为二进制类型
+                ftpClient.enterLocalPassiveMode(); // 被动模式
                 for (File fileItem : fileList){
                     fis = new FileInputStream(fileItem);
                     ftpClient.storeFile(fileItem.getName(), fis);
@@ -60,6 +74,14 @@ public class FTPUtil {
         return upload;
     }
 
+    /**
+     * ftp服务器的链接
+     * @param ip ip
+     * @param port 21
+     * @param user 用户名
+     * @param pwd 密码
+     * @return
+     */
     private boolean connectServer(String ip, int port, String user, String pwd){
         boolean isSuccess = false;
         ftpClient = new FTPClient();
