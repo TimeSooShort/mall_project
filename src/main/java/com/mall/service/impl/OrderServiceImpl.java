@@ -290,7 +290,8 @@ public class OrderServiceImpl implements IOrderService{
         PageHelper.startPage(pageNum,pageSize);
         List<Order> orderList = orderMapper.selectByUserId(userId);
         List<OrderVO> orderVOList = assembleOrderVOlist(orderList, userId);
-        PageInfo<OrderVO> info = new PageInfo<>(orderVOList);
+        PageInfo info = new PageInfo(orderList);
+        info.setList(orderVOList);
         return ServerResponse.createBySuccess(info);
     }
 
