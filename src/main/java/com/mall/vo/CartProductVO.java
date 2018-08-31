@@ -10,19 +10,19 @@ public class CartProductVO {
     private Integer id;
     private Integer userId;
     private Integer productId;
-    private Integer quantity;
-    private Integer checked;
+    private Integer quantity; //用户购买数量，超过库存时就等于库存数量
+    private Integer checked; // 是否被勾选
 
     //assemble part
     private String productName;
     private String productSubtitle;
     private String productMainImage;
-    private BigDecimal productPrice;
+    private BigDecimal productPrice; //BigDecimal
     private Integer productStatus;
-    private BigDecimal productTotalPrice;
+    private BigDecimal productTotalPrice; //BigDecimal
     private Integer productStock;
 
-    private String limitQuantity;
+    private String limitQuantity; //字段有两个值：LIMIT_NUM_SUCCESS代表库存充足，LIMIT_NUM_FAIL代表不足
 
     public Integer getId() {
         return id;
