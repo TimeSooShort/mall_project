@@ -12,27 +12,29 @@ public class Order {
 
     private Integer shippingId;
 
-    private BigDecimal payment;
+    private BigDecimal payment; // 订单所要支付的金额
 
-    private Integer paymentType;
+    private Integer paymentType; // 支付类型：1代表在线支付
 
-    private Integer postage;
+    private Integer postage; // 运费
 
-    private Integer status;
+    private Integer status; // 订单状态：0取消，10未支付，20已支付，40已发货，50订单完成，60订单关闭
 
-    private Date paymentTime;
+    private Date paymentTime; //支付时间
 
-    private Date sendTime;
+    private Date sendTime; // 发货时间
 
-    private Date endTime;
+    private Date endTime; // 交易完成时间
 
-    private Date closeTime;
+    private Date closeTime; //交易关闭时间
 
     private Date createTime;
 
     private Date updateTime;
 
-    public Order(Integer id, Long orderNo, Integer userId, Integer shippingId, BigDecimal payment, Integer paymentType, Integer postage, Integer status, Date paymentTime, Date sendTime, Date endTime, Date closeTime, Date createTime, Date updateTime) {
+    public Order(Integer id, Long orderNo, Integer userId, Integer shippingId, BigDecimal payment,
+                 Integer paymentType, Integer postage, Integer status, Date paymentTime, Date sendTime,
+                 Date endTime, Date closeTime, Date createTime, Date updateTime) {
         this.id = id;
         this.orderNo = orderNo;
         this.userId = userId;

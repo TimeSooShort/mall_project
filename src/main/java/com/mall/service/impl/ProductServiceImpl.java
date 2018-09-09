@@ -126,7 +126,7 @@ public class ProductServiceImpl implements IProductService {
         productDetailVO.setSubImages(product.getSubImages());
         productDetailVO.setSubtitle(product.getSubtitle());
 
-        productDetailVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix", "http://img.happymmall.com/"));
+        productDetailVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix", "http://img.miaoshop.top/"));
         // 先通过该产品的categoryId获得其Category对象，再获取其parentId的值
         Category category = categoryMapper.selectByPrimaryKey(productDetailVO.getCategoryId());
         if (category == null){
@@ -172,7 +172,7 @@ public class ProductServiceImpl implements IProductService {
         ProductListVO productListVO = new ProductListVO();
         productListVO.setId(product.getId());
         productListVO.setCategoryId(product.getCategoryId());
-        productListVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix", "http://img.happymmall.com/"));
+        productListVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix", "http://img.miaoshop.top/"));
         productListVO.setMainImage(product.getMainImage());
         productListVO.setName(product.getName());
         productListVO.setprice(product.getPrice());

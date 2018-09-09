@@ -6,15 +6,15 @@ import java.util.List;
 public class OrderVO {
 
     private Long orderNo;
-    private BigDecimal payment;
+    private BigDecimal payment; //订单总价
 
-    private Integer paymentType;
-    private String paymentTypeDesc;
+    private Integer paymentType; // 支付类型：1代表在线支付
+    private String paymentTypeDesc; // 支付类型的描述信息，如“在线支付”
 
-    private Integer postage;
+    private Integer postage; //运费
 
-    private Integer status;
-    private String statusDesc;
+    private Integer status;// 订单状态：0取消，10未支付，20已支付，40已发货，50订单完成，60订单关闭
+    private String statusDesc; //订单状态描述信息
 
     private String paymentTime;
     private String sendTime;
@@ -26,10 +26,10 @@ public class OrderVO {
     private List<OrderItemVO> orderItemVoList;
 
     private String imageHost;
-    private Integer shippingId;
-    private String receiverName;
+    private Integer shippingId; // 收货地址id
+    private String receiverName; //收件人姓名
 
-    private ShippingVO shippingVo;
+    private ShippingVO shippingVo; //收货地址对象Shipping的ShippingVo对象
 
     public Long getOrderNo() {
         return orderNo;

@@ -43,7 +43,16 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Created by Administrator on 2018/3/8.
+ * 订单实现类
+ * 该类中有很多对象，在此先申明：
+ * OrderItem：信息过包含与产品相关，如产品名，产品id，产品图片名，单价，用户购买数量及费用，等。对应order_item表
+ * Order对象，订单类，其信息包含收货地址id，订单总额，支付类型，支付时间，运费，交易完成及关闭时间，订单状态等。对应order表
+ * OrderItemVO：与OrderItem相比去除了id，userId, updateTime
+ * OrderProductVO ： 在前端用户在“我的购物车页”点击去支付按钮，会跳到“订单确认页”，该页面的信息分两部分：收货地址和购买的商品信息
+ *                  其中商品信息根据前端的需求后端的处理就是返回OrderProductVO：它包含三个字段：1：totalPrice订单总价
+ *                  2： imageHost：img.miaoshop.top 3：List<OrderItemVO> orderItemVoList: 它包含用户所需的商品信息
+ * OrderVO ：OrderVO是最后返回给前端的数据，它包含了三部分：1：Order的信息。2：收货地址shipping的信息。3：产品信息，即OrderItem
+ * ShippingVO：与原Shipping相比去除了四个无用信息：id, userId, createTime, updateTime
  */
 @Service("iOrderService")
 public class OrderServiceImpl implements IOrderService{
@@ -83,22 +92,28 @@ public class OrderServiceImpl implements IOrderService{
     private ShippingMapper shippingMapper;
 
     /**
-     * 先检查cart是否合格，在为每个勾选的cart生成对一个的OrderItem，最后汇总成Order订单
-     * @param userId
-     * @param shippingId
-     * @return
+     * 创建订单，分别生成OrderItem与Order对象，orderItem它所含的信息多是商品的信息，如商品名字，图片
+     * 单价，所购买数量及要支付费用等。而Order对量的信息是订单相关的，如订单的总价，支付类型，支付状态，运费
+     * 支付时间，交易完成时间等。将这些信息分开在两张表中
+     * @param userId 用户id
+     * @param shippingId 收货地址id
+     * @return 返回结果
      */
     public ServerResponse createOrder(Integer userId, Integer shippingId){
+        // 获取购物车种所有选中状态是商品，得到一个cart列表
         List<Cart> cartList = cartMapper.selectCheckedCartByUserId(userId);
         if (CollectionUtils.isEmpty(cartList)){
             return ServerResponse.createByErrorMessage("购物车为空");
         }
-        ServerResponse response = this.getCartOrderItem(cartList, userId);
+
+        // 得到OrderItem列表
+        ServerResponse<List<OrderItem>> response = this.getCartOrderItem(cartList, userId);
         if (!response.isSuccess()){
             return response;
         }
-        List<OrderItem> orderItemList = (List<OrderItem>) response.getData();
+        List<OrderItem> orderItemList = response.getData();
 
+        // 计算订单总价
         BigDecimal orderPrice = new BigDecimal("0");
         for (OrderItem orderItem : orderItemList){
             orderPrice = BigDecimalUtil.add(orderPrice.doubleValue(), orderItem.getTotalPrice().doubleValue());
@@ -107,6 +122,7 @@ public class OrderServiceImpl implements IOrderService{
         //生成订单Order
         Order order = new Order();
         order.setPayment(orderPrice);
+        // 该订单号码由此刻时间加random数字组成
         order.setOrderNo(this.getOrderNo());
         order.setStatus(Const.OrderStateEnum.NO_PAY.getCode());
         order.setPaymentType(Const.PaymentTypeEnum.ON_LINE.getCode());
@@ -119,24 +135,35 @@ public class OrderServiceImpl implements IOrderService{
             return ServerResponse.createByErrorMessage("生成订单错误");
         }
 
-        //确定订单生成再为OrderItem赋orderNo值
+        //接下来插入OrderItem数据，放在Order插入后，是因为确定订单生成成功
         for (OrderItem orderItem : orderItemList){
             orderItem.setOrderNo(order.getOrderNo());
         }
+        // 批量插入
         orderItemMapper.batchInsert(orderItemList);
 
+        // 订单生成成功后需要更新商品库存，即product的stock
         this.reduceStock(orderItemList);
 
+        // 删除cart表中上述cart信息
         this.cleanCartList(cartList);
 
+        // 组成OrderVO对象返回给前端
         OrderVO orderVO = this.assembleOrderVO(order, orderItemList);
         return ServerResponse.createBySuccess(orderVO);
     }
 
-
-    private ServerResponse<List> getCartOrderItem(List<Cart> cartList, Integer userId){
+    /**
+     * 根据每个购物车选中商品，即cart，组成OrderItem对象
+     * @param cartList cart列表
+     * @param userId 用户id
+     * @return 返回OrderItem列表
+     */
+    private ServerResponse<List<OrderItem>> getCartOrderItem(List<Cart> cartList, Integer userId){
         List<OrderItem> orderItemList = Lists.newArrayList();
+        // 遍历购物车中选中商品
         for (Cart cart : cartList){
+            // 通过id来找到对应商品
             Product product = productMapper.selectByPrimaryKey(cart.getProductId());
             if (product.getStatus() != Const.ProductStatusEnum.ON_SALE.getCode()){
                 return ServerResponse.createByErrorMessage("商品"+product.getName()+"已下架或删除");
@@ -159,10 +186,20 @@ public class OrderServiceImpl implements IOrderService{
         }
         return ServerResponse.createBySuccess(orderItemList);
     }
+
+    /**
+     * 组成一个唯一的订单号码
+     * @return
+     */
     private long getOrderNo(){
         long currentTime = System.currentTimeMillis();
         return currentTime+new Random().nextInt(100);
     }
+
+    /**
+     * 更新product库存
+     * @param list
+     */
     private void reduceStock(List<OrderItem> list){
         for (OrderItem orderItem : list){
             Product product = productMapper.selectByPrimaryKey(orderItem.getProductId());
@@ -170,11 +207,22 @@ public class OrderServiceImpl implements IOrderService{
             productMapper.updateByPrimaryKeySelective(product);
         }
     }
+
+    /**
+     * 订单生成成功后，删除购物车中相应信息
+     * @param cartList 生成订单了的cart列表
+     */
     private void cleanCartList(List<Cart> cartList){
         for (Cart cart : cartList){
             cartMapper.deleteByPrimaryKey(cart.getId());
         }
     }
+
+    /**
+     * 去除了原OrderItem的id，userId, updateTime
+     * @param orderItem orderItem
+     * @return OrderItemVO
+     */
     private OrderItemVO assembleOrderItemVO(OrderItem orderItem){
         OrderItemVO orderItemVO = new OrderItemVO();
         orderItemVO.setOrderNo(orderItem.getOrderNo());
@@ -189,6 +237,11 @@ public class OrderServiceImpl implements IOrderService{
         return orderItemVO;
     }
 
+    /**
+     * 与原Shipping相比去除了四个无用信息：id, userId, createTime, updateTime
+     * @param shipping 收货地址
+     * @return ShippingVO
+     */
     private ShippingVO assembleShippingVo(Shipping shipping){
         ShippingVO shippingVo = new ShippingVO();
         shippingVo.setReceiverName(shipping.getReceiverName());
@@ -198,53 +251,81 @@ public class OrderServiceImpl implements IOrderService{
         shippingVo.setReceiverDistrict(shipping.getReceiverDistrict());
         shippingVo.setReceiverMobile(shipping.getReceiverMobile());
         shippingVo.setReceiverZip(shipping.getReceiverZip());
-        shippingVo.setReceiverPhone(shippingVo.getReceiverPhone());
+        shippingVo.setReceiverPhone(shipping.getReceiverPhone());
         return shippingVo;
     }
 
+    /**
+     *
+     * @param order 订单信息
+     * @param orderItems OrderItem列表
+     * @return
+     */
     private OrderVO assembleOrderVO(Order order, List<OrderItem> orderItems){
         OrderVO orderVo = new OrderVO();
         orderVo.setOrderNo(order.getOrderNo());
+        // 订单总价
         orderVo.setPayment(order.getPayment());
+        // 支付类型，1：在线支付
         orderVo.setPaymentType(order.getPaymentType());
+        // 通过支付类型数字（code）来获取其描述信息（desc）。如：code：1，其desc为“在线支付”
         orderVo.setPaymentTypeDesc(Const.PaymentTypeEnum.codeOf(order.getPaymentType()).getDesc());
-
+        // 运费
         orderVo.setPostage(order.getPostage());
+        // 订单状态。0取消，10未支付，20已支付，40已发货，50订单完成，60订单关闭
         orderVo.setStatus(order.getStatus());
+        //订单状态描述信息
         orderVo.setStatusDesc(Const.OrderStateEnum.codeOf(order.getStatus()).getValue());
-
+        // 收货地址id
         orderVo.setShippingId(order.getShippingId());
+        // 通过shippingId来获取shipping对象，再组成ShippingVo对象
+        // 与原Shipping相比去除了四个无用信息：id, userId, createTime, updateTime
         Shipping shipping = shippingMapper.selectByPrimaryKey(order.getShippingId());
         if (shipping != null){
             orderVo.setShippingVo(this.assembleShippingVo(shipping));
             orderVo.setReceiverName(shipping.getReceiverName());
         }
-
+        // 支付时间，Order对象里是Date对象，OrderVo是String对象，需要进行转化
         orderVo.setPaymentTime(DateTimeUtil.dateToStr(order.getPaymentTime()));
+        // 发货时间
         orderVo.setSendTime(DateTimeUtil.dateToStr(order.getSendTime()));
+        // 交易完成时间
         orderVo.setEndTime(DateTimeUtil.dateToStr(order.getEndTime()));
+        // 该条记录创建时间
         orderVo.setCreateTime(DateTimeUtil.dateToStr(order.getCreateTime()));
+        // 交易关闭时间
         orderVo.setCloseTime(DateTimeUtil.dateToStr(order.getCloseTime()));
-
+        // img.miaoshop.top
         orderVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix"));
 
+        // 将OrderItem组成OrderItemVO，前面说过，OrderItem的信息更多的是跟产品product有关
+        // 前端用来显示产品图片，产品名，产品单价，购买数量等信息.
+        // 相比原OrderItem去除了单个不用的信息，id，userId，updateTime
         List<OrderItemVO> orderItemVOList = Lists.newArrayList();
         for (OrderItem orderItem : orderItems){
             orderItemVOList.add(this.assembleOrderItemVO(orderItem));
         }
-
         orderVo.setOrderItemVoList(orderItemVOList);
         return orderVo;
     }
 
+    /**
+     * 取消订单
+     * @param userId 用户id
+     * @param orderNo 订单号
+     * @return 返回取消结果
+     */
     public ServerResponse cancelOrder(Integer userId, Long orderNo){
+        // 通过用户id及订单号获得该订单
         Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
         if (order == null){
             return ServerResponse.createByErrorMessage("没有该订单");
         }
+        // 只有支付状态等于10，及未支付，才能取消订单
         if (order.getStatus() != Const.OrderStateEnum.NO_PAY.getCode()){
             return ServerResponse.createByErrorMessage("已经支付完成，无法取消");
         }
+        // 更新订单状态未0，代表取消状态
         Order updateOrder = new Order();
         updateOrder.setId(order.getId());
         updateOrder.setStatus(Const.OrderStateEnum.CANCELED.getCode());
@@ -256,45 +337,88 @@ public class OrderServiceImpl implements IOrderService{
         return ServerResponse.createBySuccess();
     }
 
+    /**
+     * 该方法的调用在前端的订单确认页，在由“我的购物车”页面跳转来，需加载商品信息用来显示
+     * 逻辑是: 1：通过userId来获取购物车中选定商品列表——>cartList
+     * 2：用cart信息来组成OrderItem，得到OrderItem列表
+     * 3: 再将每个OrderItem组成OrderItemVO，获得OrderItemVO列表，连带计算出订单总额
+     * 4：最后组成OrderProductVO对象返回
+     *
+     * 关于这些对象的解释在这篇的开头处。
+     * @param userId 用户id
+     * @return OrderProductVO
+     */
     public ServerResponse getOrderCartProduct(Integer userId){
+        // 用于返回的OrderProductVO
         OrderProductVO orderProductVO = new OrderProductVO();
-
-        List<OrderItem> orderItemList = orderItemMapper.selectByUserId(userId);
-        if (CollectionUtils.isEmpty(orderItemList)){
-            return ServerResponse.createByErrorMessage("还没下单，快去shopping吧！");
+        // 获取cartList列表
+        List<Cart> cartList = cartMapper.selectCheckedCartByUserId(userId);
+        // 组成OrderItem列表
+        ServerResponse<List<OrderItem>> response = this.getCartOrderItem(cartList, userId);
+        if (!response.isSuccess()){
+            return response;
         }
+        List<OrderItem> orderItemList = response.getData();
+        // 进一步封装成OrderItemVO
         List<OrderItemVO> orderItemVOList = Lists.newArrayList();
+        // 计算订单总价
         BigDecimal totalPayment = new BigDecimal("0");
         for (OrderItem orderItem : orderItemList){
             totalPayment = BigDecimalUtil.add(totalPayment.doubleValue(), orderItem.getTotalPrice().doubleValue());
             OrderItemVO orderItemVO = this.assembleOrderItemVO(orderItem);
             orderItemVOList.add(orderItemVO);
         }
+        //赋值
         orderProductVO.setOrderItemVoList(orderItemVOList);
         orderProductVO.setTotalPrice(totalPayment);
         orderProductVO.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix"));
         return ServerResponse.createBySuccess(orderProductVO);
     }
 
+    /**
+     * 获取订单详情。即OrderVO。
+     * @param userId 用户id
+     * @param orderNo 订单号
+     * @return OrderVO
+     */
     public ServerResponse getOrderDetail(Integer userId, Long orderNo){
+        // 通过用户名及订单号获得订单Order
         Order order = orderMapper.selectByUserIdAndOrderNo(userId, orderNo);
         if (order == null){
             return ServerResponse.createByErrorMessage("订单不存在");
         }
+        // 通过用户id及订单号获取OrderItem列表
         List<OrderItem> orderItemList = orderItemMapper.selectByUserIdOrderNo(userId, orderNo);
+        // 组成OrderVO
         OrderVO orderVO = this.assembleOrderVO(order, orderItemList);
         return ServerResponse.createBySuccess(orderVO);
     }
 
+    /**
+     *
+     * @param userId 用户id
+     * @param pageSize 一页多大
+     * @param pageNum 第几页
+     * @return orderVOList
+     */
     public ServerResponse getOrderList(Integer userId, Integer pageSize, Integer pageNum){
         PageHelper.startPage(pageNum,pageSize);
+        // 获取订单列表
         List<Order> orderList = orderMapper.selectByUserId(userId);
+        // 获取OrderVO列表
         List<OrderVO> orderVOList = assembleOrderVOlist(orderList, userId);
         PageInfo info = new PageInfo(orderList);
         info.setList(orderVOList);
         return ServerResponse.createBySuccess(info);
     }
 
+    /**
+     * 得到OrderVO的列表。
+     * 逻辑就是将Order列表的每个都封装成OrderItem。先获取OrderItem的列表再调用assembleOrderVO方法组成OrderVO对象
+     * @param orderList Order列表
+     * @param userId 用户id
+     * @return List<OrderVO>
+     */
     private List<OrderVO> assembleOrderVOlist(List<Order> orderList, Integer userId){
         List<OrderVO> orderVOList = Lists.newArrayList();
         for (Order order : orderList){
@@ -482,7 +606,14 @@ public class OrderServiceImpl implements IOrderService{
     }
 
 
-    //后台
+    //=====================后台管理系统接口=========================
+
+    /**
+     * 订单列表
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
     public ServerResponse<PageInfo> manageList(Integer pageNum, Integer pageSize){
         PageHelper.startPage(pageNum, pageSize);
         List<Order> orderList = orderMapper.selectAllOrder();
@@ -492,6 +623,13 @@ public class OrderServiceImpl implements IOrderService{
         return ServerResponse.createBySuccess(pageInfo);
     }
 
+    /**
+     * 按订单号查询
+     * @param pageNum
+     * @param pageSize
+     * @param orderNo 订单号
+     * @return OrderVO
+     */
     public ServerResponse<PageInfo> manageSearch(Integer pageNum, Integer pageSize, Long orderNo){
         PageHelper.startPage(pageNum,pageSize);
         Order order = orderMapper.selectByOrderNo(orderNo);
@@ -505,6 +643,11 @@ public class OrderServiceImpl implements IOrderService{
         return ServerResponse.createBySuccess(pageInfo);
     }
 
+    /**
+     * 订单详情
+     * @param orderNo 订单号
+     * @return OrderVO
+     */
     public ServerResponse<OrderVO> manageDetail(Long orderNo){
         Order order = orderMapper.selectByOrderNo(orderNo);
         if (order == null){
@@ -515,11 +658,17 @@ public class OrderServiceImpl implements IOrderService{
         return ServerResponse.createBySuccess(orderVO);
     }
 
+    /**
+     * 订单发货
+     * @param orderNo 订单号
+     * @return
+     */
     public ServerResponse manageSendGoods(Long orderNo){
         Order order = orderMapper.selectByOrderNo(orderNo);
         if (order == null){
             return ServerResponse.createByErrorMessage("没有该订单");
         }
+        // 判断订单是否已支付
         if (order.getStatus() == Const.OrderStateEnum.PAID.getCode()){
             order.setStatus(Const.OrderStateEnum.SHIPPED.getCode());
             order.setSendTime(new Date());

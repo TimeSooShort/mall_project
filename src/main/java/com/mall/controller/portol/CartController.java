@@ -185,8 +185,8 @@ public class CartController {
     public ServerResponse<Integer> getCartProductCount(HttpSession session){
         User user = (User) session.getAttribute(Const.CURRENT_USER);
         if (user == null){
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
-                    ResponseCode.NEED_LOGIN.getDesc());
+            // 这里未登录状态就返回0，代表未登录状态下前端导航条nav的购物车数量显示为0
+            return ServerResponse.createBySuccess(0);
         }
         return iCartService.getCartProductCount(user.getId());
     }

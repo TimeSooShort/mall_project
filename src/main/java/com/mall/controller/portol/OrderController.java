@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Created by Administrator on 2018/3/7.
+ * 订单：分为支付与订单两个模块
  */
 @Controller
 @RequestMapping("/order/")
@@ -107,6 +107,13 @@ public class OrderController {
 
 
     //订单模块
+
+    /**
+     * 生成订单。对应前端订单确认页的提交订单的按钮点击。
+     * @param session 判断登录
+     * @param shippingId 收货地址id
+     * @return OrderVO对象
+     */
     @RequestMapping("create.do")
     @ResponseBody
     public ServerResponse create(HttpSession session, Integer shippingId){
@@ -117,6 +124,13 @@ public class OrderController {
         return iOrderService.createOrder(user.getId(), shippingId);
     }
 
+    /**
+     * 取消订单。对应前端订单详情页。
+     * 只有未支付状态的订单才能取消
+     * @param session 判断登录
+     * @param orderNo 订单号
+     * @return 返回取消结果
+     */
     @RequestMapping("cancel.do")
     @ResponseBody
     public ServerResponse cancel(HttpSession session, Long orderNo){
@@ -127,6 +141,15 @@ public class OrderController {
         return iOrderService.cancelOrder(user.getId(), orderNo);
     }
 
+    /**
+     * 对应前端“我的购物车”页面里去结算按钮的点击，会跳到“订单确认”页面，在页面加载商品过程中调用该方法，获取商品信息。
+     * 获取订单的商品信息，订单模块有两张表，order表与order_item表，对应Order类与OrderItem类
+     * 其中Order信息多与商品相关，如商品名字，图片，购买数量，单价...;
+     * Order信息是订单的信息，如订单状态，收货地址，支付方式，支付时间，交易完成时间等....
+     * 这里要的就是OrderItem对象。
+     * @param session 判断登录
+     * @return
+     */
     @RequestMapping("get_order_cart_product.do")
     @ResponseBody
     public ServerResponse getOrderCartProduct(HttpSession session){
@@ -137,6 +160,13 @@ public class OrderController {
         return iOrderService.getOrderCartProduct(user.getId());
     }
 
+    /**
+     * 订单详情。对应前端的“订单详情”页。
+     * 返回前端OrderVO，所有信息都在里面。
+     * @param session 判断登录
+     * @param orderNo 订单号
+     * @return OrderVO
+     */
     @RequestMapping("detail.do")
     @ResponseBody
     public ServerResponse getOrderDetail(HttpSession session, Long orderNo){
@@ -147,6 +177,14 @@ public class OrderController {
         return iOrderService.getOrderDetail(user.getId(), orderNo);
     }
 
+    /**
+     * 订单列表。对应前端的”订单列表“页
+     * 返回给前端OrderVO列表，OrderVO对象包含所有需要信息。
+     * @param session 判断登录
+     * @param pageSie 一页多大
+     * @param pageNum 第几页
+     * @return OrderVO列表
+     */
     @RequestMapping("list.do")
     @ResponseBody
     public ServerResponse getOrderList(HttpSession session,

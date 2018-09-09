@@ -16,11 +16,11 @@ public class OrderItem {
 
     private String productImage;
 
-    private BigDecimal currentUnitPrice;
+    private BigDecimal currentUnitPrice; //商品单价
 
-    private Integer quantity;
+    private Integer quantity; // 购买数量
 
-    private BigDecimal totalPrice;
+    private BigDecimal totalPrice; // 该种商品所购买的总价
 
     private Date createTime;
 

@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
 
+/**
+ * 后台管理系统
+ */
 @Controller
 @RequestMapping("/manage/order/")
 public class OrderManageController {
@@ -26,6 +29,13 @@ public class OrderManageController {
     @Autowired
     private IUserService iUserService;
 
+    /**
+     * 订单列表
+     * @param session 判断登录
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
     @RequestMapping("list.do")
     @ResponseBody
     public ServerResponse<PageInfo> orderList(HttpSession session,
@@ -43,6 +53,14 @@ public class OrderManageController {
         }
     }
 
+    /**
+     * 按订单号查询
+     * @param session 判断登录
+     * @param orderNo 订单号
+     * @param pageNum 第几页
+     * @param pageSize 一页包含数量
+     * @return
+     */
     @RequestMapping("search.do")
     @ResponseBody
     public ServerResponse<PageInfo> searchList(HttpSession session,
@@ -61,6 +79,12 @@ public class OrderManageController {
         }
     }
 
+    /**
+     * 订单详情
+     * @param session 判断登录
+     * @param orderNo 订单号
+     * @return
+     */
     @RequestMapping("detail.do")
     @ResponseBody
     public ServerResponse<OrderVO> getDetail(HttpSession session, Long orderNo){
@@ -76,6 +100,12 @@ public class OrderManageController {
         }
     }
 
+    /**
+     * 订单发货
+     * @param session 判断登录
+     * @param orderNo 订单号
+     * @return
+     */
     @RequestMapping("send_goods.do")
     @ResponseBody
     public ServerResponse sendsGoods(HttpSession session, Long orderNo){
