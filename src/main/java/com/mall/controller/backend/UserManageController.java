@@ -1,6 +1,8 @@
 package com.mall.controller.backend;
 
+import com.github.pagehelper.PageInfo;
 import com.mall.common.Const;
+import com.mall.common.ResponseCode;
 import com.mall.common.ServerResponse;
 import com.mall.pojo.User;
 import com.mall.service.IUserService;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
@@ -45,5 +48,23 @@ public class UserManageController {
             }
         }
         return response;
+    }
+
+    @RequestMapping(value = "list.do", method = RequestMethod.POST)
+    @ResponseBody
+    public ServerResponse<PageInfo> getUserList(@RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                                @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                                HttpSession session) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(),
+                    ResponseCode.NEED_LOGIN.getDesc());
+        }
+        if (iUserService.checkAdminRole(user).isSuccess()) {
+            return iUserService.getUserList(pageSize, pageNum);
+        }
+        else {
+            return ServerResponse.createByErrorMessage("不是管理员，无法登录");
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.mall.service;
 
+import com.github.pagehelper.PageInfo;
 import com.mall.common.ServerResponse;
 import com.mall.pojo.User;
 
@@ -26,4 +27,6 @@ public interface IUserService {
     ServerResponse<User> getInformation(Integer userId);
 
     ServerResponse checkAdminRole(User user);
+
+    ServerResponse<PageInfo> getUserList(Integer pageSize, Integer pageNum);
 }

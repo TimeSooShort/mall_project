@@ -1,5 +1,7 @@
 package com.mall.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.mall.common.Const;
 import com.mall.common.ServerResponse;
 import com.mall.common.TokenCache;
@@ -11,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -244,5 +247,19 @@ public class UserServiceImpl implements IUserService {
             return ServerResponse.createBySuccess();
         }
         return ServerResponse.createByError();
+    }
+
+    /**
+     * 获取所有用户
+     * @param pageSize
+     * @param pageNum
+     * @return
+     */
+    @Override
+    public ServerResponse<PageInfo> getUserList(Integer pageSize, Integer pageNum) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<User> userList = userMapper.selectAllUser();
+        PageInfo pageResult = new PageInfo(userList);
+        return ServerResponse.createBySuccess(pageResult);
     }
 }

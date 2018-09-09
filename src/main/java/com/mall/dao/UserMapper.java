@@ -3,6 +3,8 @@ package com.mall.dao;
 import com.mall.pojo.User;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface UserMapper {
     int deleteByPrimaryKey(Integer id);
 
@@ -31,4 +33,6 @@ public interface UserMapper {
     int checkPassword(@Param("password") String password, @Param("userId") Integer userId);
 
     int checkEmailByUserId(@Param("email") String email, @Param("id") Integer id);
+
+    List<User> selectAllUser();
 }

@@ -577,7 +577,7 @@ public class OrderServiceImpl implements IOrderService{
         if (order.getStatus() >= Const.OrderStateEnum.PAID.getCode()){
             return ServerResponse.createByErrorMessage("该行为为重复调用");
         }
-        if (Const.AlipayCallback.RESPONSE_SUCCESS.equals(tradeStatus)){
+        if (Const.AlipayCallback.TRADE_STATUS_TRADE_SUCCESS.equals(tradeStatus)){
             order.setStatus(Const.OrderStateEnum.PAID.getCode());
             order.setPaymentTime(DateTimeUtil.strToDate(params.get("gmt_payment")));
             orderMapper.updateByPrimaryKeySelective(order);

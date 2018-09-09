@@ -3,7 +3,7 @@ package com.mall.vo;
 import java.math.BigDecimal;
 
 /**
- * Created by Administrator on 2018/2/25.
+ * 产品模块实现类
  */
 public class ProductListVO {
 
